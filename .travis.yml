@@ -7,8 +7,9 @@ rust: nightly
 os: linux
 
 install:
-  - cargo install mdbook
-  - export PATH="$PATH:/home/travis/.cargo/bin"
+  - mkdir -p $CARGO_BINDIR
+  - curl -sL "https://github.com/japaric/mdBook/releases/download/${MDBOOK_VERSION}/mdbook-${MDBOOK_VERSION}-${TARGET}.tar.gz" | tar -C $CARGO_BINDIR -xz
+  - export PATH="$PATH:$CARGO_BINDIR"
   - git clone --depth 1 https://github.com/davisp/ghp-import
 
 script:
@@ -30,4 +31,7 @@ notifications:
 
 env:
   global:
+    - MDBOOK_VERSION=v0.0.11
+    - TARGET=x86_64-unknown-linux-gnu
+    - CARGO_BINDIR=/home/travis/.cargo/bin
     - secure: kJof1o+nrjiqS+w8TDDTxhApprxcjksSeovpumuc9eCMGK+4mqtjdl7AGP9AYbIYWAJEF80FJTvXyzviZs7Ov+K52YuLXVkfGSM4v1Gm9NZol6H208QLmggBhsbNzyu3v+/RUTVE3foDAANxhOVXSlLRc8thd9TfzFMRHhna63uNDNLbzE7A1a/etPGLe6QSIGXlQ/EKNUGxA2vTr15xlzm5qmLILHIEGuLEw8IMk0dd8eDYF+vQuQXFnWYL3Wx1MCqk88OK9KpMNR4Rujuewsgb3ODM56y67mRnMyu1wXoN4idXaeGy2S/M3XCdwY0vt/7WTkluTGQ3PQu8tsM5unV50/1x78xw7uEsMFd7g5IJXrsZB00vrrgXjJ/6oOZcNWhWX+LdPa+keyBau6KedPhVt9yFqhgeDIh8+qIDfVGzMmvCN8rcmWQc5z8f370kD7B9/oNp8FPazpU83gtCuWdKLKtxigVCNZWLxiMnH/y4fmNJUqOY0wbyDucNO+io72MNQTLIw5eMNWV7FDgU2pbexckUq763ZmhBhMYwo8e1583mi8jJy8j/hHYWFA4hsnA/5McdBUqxuWZLg2RgB9mJ8EYAJkGE4g2TR+W9GX6pj/xfQ7jLUe8HBgqUKBtDAMz/ZtpU1kpb4IQb1b6uoZci/zWBwCGRGtzJtzak064=
