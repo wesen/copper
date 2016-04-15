@@ -7,7 +7,7 @@ rust: nightly
 os: linux
 
 install:
-  - curl -sf "https://raw.githubusercontent.com/japaric/rust-everywhere/master/install.sh" | bash -s -- --from azerupi/mdBook --tag v0.0.11-rc1 --at /home/travis/.cargo/bin
+  - curl -sf "https://raw.githubusercontent.com/japaric/rust-everywhere/master/install.sh" | bash -s -- --from azerupi/mdBook --at /home/travis/.cargo/bin
   - export PATH="$PATH:/home/travis/.cargo/bin"
   - git clone --depth 1 https://github.com/davisp/ghp-import
 
