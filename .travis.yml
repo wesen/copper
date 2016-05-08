@@ -18,7 +18,7 @@ script:
 
 after_success:
   - if [ "$TRAVIS_PULL_REQUEST" = 'false' ]; then
-      ghp book
+      ghp book;
       git push -fq "https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git" gh-pages && echo OK;
     fi
 
