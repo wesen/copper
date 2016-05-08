@@ -10,7 +10,8 @@ os: linux
 install:
   - export PATH="$PATH:/home/travis/.cargo/bin"
   - command -v ghp >/dev/null 2>&1 || cargo install ghp --debug
-  - command -v mdbook >/dev/null 2>&1 || cargo install mdbook --debug --no-default-features --features output
+  # TODO use versioned release instead of git snapshot
+  - command -v mdbook >/dev/null 2>&1 || cargo install --git https://github.com/azerupi/mdbook --debug --no-default-features --features output
 
 script:
   - mdbook test
