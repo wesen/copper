@@ -10,8 +10,7 @@ os: linux
 install:
   - export PATH="$PATH:/home/travis/.cargo/bin"
   - command -v ghp >/dev/null 2>&1 || cargo install ghp --debug
-  # TODO(azerupi/mdbook#136) use `--no-default-features --features output
-  - command -v mdbook >/dev/null 2>&1 || cargo install mdbook --debug
+  - command -v mdbook >/dev/null 2>&1 || cargo install mdbook --debug --no-default-features --features output
 
 script:
   - mdbook test
