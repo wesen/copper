@@ -1,15 +1,16 @@
 sudo: false
 
 language: rust
+cache: cargo
 
 rust: nightly
 
 os: linux
 
 install:
-  - curl -sf "https://raw.githubusercontent.com/japaric/rust-everywhere/master/install.sh" | bash -s -- --from azerupi/mdBook --at /home/travis/.cargo/bin
+  - cargo install mdbook --debug
+  - cargo install ghp --debug
   - export PATH="$PATH:/home/travis/.cargo/bin"
-  - git clone --depth 1 https://github.com/davisp/ghp-import
 
 script:
   - mdbook test
@@ -17,7 +18,7 @@ script:
 
 after_success:
   - if [ "$TRAVIS_PULL_REQUEST" = 'false' ]; then
-      ./ghp-import/ghp_import.py -n book;
+      ghp book
       git push -fq "https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git" gh-pages && echo OK;
     fi
 
