@@ -8,8 +8,8 @@ rust: nightly
 os: linux
 
 install:
-  - cargo install mdbook --debug
   - cargo install ghp --debug
+  - cargo install mdbook --debug --no-default-features --features output
   - export PATH="$PATH:/home/travis/.cargo/bin"
 
 script:
