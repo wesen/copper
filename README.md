@@ -4,7 +4,7 @@
 
 # `Copper`
 
-> Nothing to see here! (yet)
+> [WIP] Your guide to programming ARM Cortex-M microcontrollers with Rust
 
 ## License
 
