@@ -14,7 +14,6 @@ install:
   - command -v mdbook >/dev/null 2>&1 || cargo install --git https://github.com/azerupi/mdbook --debug --no-default-features --features output
 
 script:
-  - mdbook test
   - mdbook build
 
 after_success:
