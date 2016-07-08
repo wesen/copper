@@ -59,17 +59,17 @@ different processor, you are going to need a different target specification file
 The list below is a collection of target specification files for all the existing Cortex-M
 processors and their most common variants:
 
-- [cortex-m0](/target/cortex-m0.json). Cortex-M0.
-- [cortex-m0plus](/target/cortex-m0plus.json). Cortex-M0+.
-- [cortex-m1](/target/cortex-m1.json). Cortex-M1.
-- [cortex-m3](/target/cortex-m3.json). Cortex-M3.
-- [cortex-m4](/target/cortex-m4.json). Cortex-M4 without a [Floating Point Unit][FPU] (FPU).
-- [cortex-m4f](/target/cortex-m4f.json). Cortex-M4 with a FPU. Supports single precision FP
+- [cortex-m0](./target/cortex-m0.json). Cortex-M0.
+- [cortex-m0plus](./target/cortex-m0plus.json). Cortex-M0+.
+- [cortex-m1](./target/cortex-m1.json). Cortex-M1.
+- [cortex-m3](./target/cortex-m3.json). Cortex-M3.
+- [cortex-m4](./target/cortex-m4.json). Cortex-M4 without a [Floating Point Unit][FPU] (FPU).
+- [cortex-m4f](./target/cortex-m4f.json). Cortex-M4 with a FPU. Supports single precision FP
   instructions (e.g. `vadd.f32`).
-- [cortex-m7](/target/cortex-m7.json). Cortex-M7 without a FPU.
-- [cortex-m7f](/target/cortex-m7f.json). Cortex-M7 with a FPU. Supports both single and double
+- [cortex-m7](./target/cortex-m7.json). Cortex-M7 without a FPU.
+- [cortex-m7f](./target/cortex-m7f.json). Cortex-M7 with a FPU. Supports both single and double
   precision FP instructions.
-- [cortex-m7f-sp](/target/cortex-m7f-sp.json). Cortex-M7 with a FPU. Only supports single precision
+- [cortex-m7f-sp](./target/cortex-m7f-sp.json). Cortex-M7 with a FPU. Only supports single precision
   FP instructions.
   
 [FPU]: https://en.wikipedia.org/wiki/Floating-point_unit
@@ -84,4 +84,3 @@ If you want to know why these files have the contents they have, check [this RFC
 therein should be useful if you want to tweak these target specification files for some reason.
 
 [this RFC]: https://github.com/japaric/rfcs/blob/cortex-m-targets/text/0000-cortex-m-targets.md#target-specifications
-
