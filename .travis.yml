@@ -1,7 +1,9 @@
-sudo: false
+sudo: required
 
 language: rust
 cache: cargo
+
+services: docker
 
 rust: nightly
 
@@ -14,10 +16,10 @@ install:
   - command -v mdbook >/dev/null 2>&1 || cargo install --git https://github.com/azerupi/mdbook --debug --no-default-features --features output
 
 script:
-  - mdbook build
+  - bash ci/script.sh
 
 after_success:
-  - sh ci/after_success.sh
+  - bash ci/after_success.sh
 
 branches:
   only:
