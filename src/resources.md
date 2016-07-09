@@ -61,3 +61,15 @@ there (like building executables using only Cargo) to write this book.
 [GitHub repository](https://github.com/hannobraun/embedded)
 
 Hanno is also exploring this space but using an Arduino Due. Definitely worth checking out!
+
+### RustyGecko
+
+> Developing Rust on Bare-Metal - An experimental embedded software platform
+
+[Abstract and full text PDF](https://brage.bibsys.no/xmlui/handle/11250/2352353)
+[GitHub repositories](https://github.com/RustyGecko)
+
+A master thesis about using Rust to develop software for the Cortex-M3 based EFM32GG
+microcontroller. I found the section about "Handling interrupts with Closures" and the discussion
+about "Avoiding Mutable Aliases to Hardware" particularly interesting! The authors have also put
+their code up on GitHub.
