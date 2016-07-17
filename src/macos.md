@@ -10,7 +10,8 @@
 You can install most of the required tools using `brew`:
 
 ```
-$ brew install arm-none-eabi-gcc arm-none-eabi-gdb openocd qemu
+$ brew cask install gcc-arm-embedded
+$ brew install openocd qemu
 ```
 
 To install Rust and Cargo, I recommend using [rustup]:
