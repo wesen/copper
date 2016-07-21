@@ -300,23 +300,6 @@ depends on the built-in internal clock of your microcontroller (mine is 8 MHz) a
 instructions that `delay` compiles to in debug mode. However, using a value between `10_000` and
 `100_000` for `ticks` should make the LED blink at a visible rate.
 
-Trying to compile this program as usual will give an undefined reference linker error:
-
-```
-$ xargo build --target $TARGET
-```
-```
-error: linking with `arm-none-eabi-gcc` failed: exit code: 1
-core.0.rs:(.text._ZN4core9panicking9panic_fmt17he746d5e431b5481eE+0x24): undefined reference to `rust_begin_unwind'`
-```
-
-I'm not quite sure why this happens but you can work around this problem if you disable overflow
-checks:
-
-```
-$ xargo rustc --target $TARGET -- -C debug-assertions=off
-```
-
 ## Test it again
 
 To test, simply flash the program and let it run from the debugger:

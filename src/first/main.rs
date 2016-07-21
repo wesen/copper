@@ -35,7 +35,7 @@ mod vector_table {
 // their definitions empty.
 mod lang_items {
     #[lang = "panic_fmt"]
-    fn panic_fmt() {}
+    extern fn panic_fmt() {}
 
     #[lang = "eh_personality"]
     fn eh_personality() {}
