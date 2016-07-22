@@ -1,6 +1,6 @@
 set -ex
 
-if [ "$TRAVIS_PULL_REQUEST" = 'false' ]; then
+if [[ "$TRAVIS_PULL_REQUEST" = 'false' && "$TRAVIS_OS_NAME" = "linux" ]]; then
     echo "User-agent: *\nDisallow: /" > book/robots.txt
     ghp book
     set +x
