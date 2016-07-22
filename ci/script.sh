@@ -13,6 +13,7 @@ build_apps() {
            -w /mnt \
            japaric/copper:$tag \
            bash -ex -c "
+rustup default nightly
 for app in $(echo app/*); do
     pushd \$app
     xargo build --target $target
