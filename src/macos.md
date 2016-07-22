@@ -1,12 +1,5 @@
 # macOS
 
-> **WARNING** Totally untested. If this does/doesn't work, let me know!
-
-> **TODO** Macports as an alternative to brew?
-
-> **TODO** From which fork should we get the `arm-none-eabi-*` packages? AFAICT, they are not in the
-> original brew repo.
-
 You can install most of the required tools using `brew`:
 
 ```
@@ -36,10 +29,10 @@ Finally, to install Xargo simply use:
 $ cargo install xargo
 ```
 
-## First OpenOCD connection
+## Testing OpenOCD
 
-> **TODO** Empty section `:-)`, but most of this stuff looks like the [Linux] version.
+Follow [these instructions] to test connecting to your programmer/debugger using OpenOCD.
 
-[Linux]: /linux.html#First%20OpenOCD%20connection
+[these instructions]: /linux.html#First%20OpenOCD%20connection
 
 > **TODO** Any permission problems on Mac? i.e. Do we actually need to use `sudo`?
