@@ -7,7 +7,9 @@ services: docker
 
 rust: nightly
 
-os: linux
+os:
+  - linux
+  - osx
 
 install:
   - export PATH="$PATH:/home/travis/.cargo/bin"
