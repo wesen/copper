@@ -3,6 +3,7 @@ set -ex
 case $TRAVIS_OS_NAME in
     osx)
         command -v xargo >/dev/null 2>&1 || cargo install xargo --debug
+        brew install openocd qemu
     ;;
 esac
 
