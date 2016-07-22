@@ -7,13 +7,13 @@ services: docker
 
 rust: nightly
 
-os: linux
+os:
+  - linux
+  - osx
 
 install:
-  - export PATH="$PATH:/home/travis/.cargo/bin"
-  - command -v ghp >/dev/null 2>&1 || cargo install ghp --debug
-  # TODO use versioned release instead of git snapshot
-  - command -v mdbook >/dev/null 2>&1 || cargo install --git https://github.com/azerupi/mdbook --debug --no-default-features --features output
+  - export PATH="$PATH:$HOME/.cargo/bin"
+  - bash ci/install.sh
 
 script:
   - bash ci/script.sh
