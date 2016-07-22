@@ -26,6 +26,7 @@ done
 "
         ;;
         osx)
+            brew install caskroom/cask/brew-cask
             brew cask install gcc-arm-embedded
 
             for app in $(echo app/*); do
