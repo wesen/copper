@@ -26,7 +26,6 @@ done
 "
         ;;
         osx)
-            curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=nightly
             brew cask install gcc-arm-embedded
 
             for app in $(echo app/*); do
