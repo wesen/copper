@@ -10,6 +10,8 @@
 You can install most of the required tools using `brew`:
 
 ```
+# NOTE if you get "Error: Unknown command: cask", then run this command: `brew tap Caskroom/cask`
+# and try again
 $ brew cask install gcc-arm-embedded
 $ brew install openocd qemu
 ```
