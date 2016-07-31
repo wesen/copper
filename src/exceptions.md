@@ -55,7 +55,7 @@ Now we need to populate this section in our Rust program:
 #![feature(asm)]
 
 mod exception {
-    pub fn handler() {
+    pub fn handler() -> ! {
         unsafe {
             asm!("bkpt");
         }
