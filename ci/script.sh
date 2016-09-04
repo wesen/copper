@@ -1,42 +1,16 @@
 set -ex
 
+. $(dirname $0)/env.sh
+
 build_apps() {
     local target=cortex-m3
 
-    case $TRAVIS_OS_NAME in
-        linux)
-            local tag=2016-05-10
-
-            # The copper user has id = 1000, but this may not match the travis user id. To workaround this
-            # issue, make everything world write-able.
-            chmod -R a+w .
-
-            docker run \
-                   -v $(pwd):/mnt \
-                   -w /mnt \
-                   japaric/copper:$tag \
-                   bash -ex -c "
-rustup default nightly
-for app in $(echo app/*); do
-    pushd \$app
-    xargo build --target $target
-    arm-none-eabi-objdump -Cd -j .vector_table -j .text target/$target/debug/app
-    popd
-done
-"
-        ;;
-        osx)
-            brew tap Caskroom/cask
-            brew cask install gcc-arm-embedded
-
-            for app in $(echo app/*); do
-                pushd $app
-                xargo build --target $target
-                arm-none-eabi-objdump -Cd -j .vector_table -j .text target/$target/debug/app
-                popd
-            done
-        ;;
-    esac
+    for app in $(echo app/*); do
+        pushd $app
+        xargo build --target $target
+        arm-none-eabi-objdump -Cd -j .vector_table -j .text target/$target/debug/app
+        popd
+    done
 }
 
 build_docs() {
@@ -44,8 +18,30 @@ build_docs() {
 }
 
 main() {
-    build_apps
-    build_docs
+    if [[ $LINUX && ${INSIDE_DOCKER_CONTAINER:-n} == n ]]; then
+        local gid=$(id -g) \
+              id=rust \
+              uid=$(id -u)
+
+        docker run \
+               --entrypoint bash \
+               -e INSIDE_DOCKER_CONTAINER=y \
+               -e TRAVIS_OS_NAME=$TRAVIS_OS_NAME \
+               -v $(pwd):/mnt \
+               japaric/copper \
+               -c "
+set -eux
+usermod -u $uid $id
+groupmod -g $gid $id
+chgrp -R $id /home/$id
+HOME=/home/$id USER=$id su -c '
+    cd /mnt && bash ci/install.sh && bash ci/script.sh && bash ci/after_success.sh
+' $id
+"
+    else
+        build_apps
+        build_docs
+    fi
 }
 
 main

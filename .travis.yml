@@ -1,18 +1,14 @@
-sudo: required
+language: generic
 
-language: rust
-cache: cargo
-
-services: docker
-
-rust: nightly
-
-os:
-  - linux
-  - osx
+matrix:
+  include:
+    - os: linux
+      services: docker
+      sudo: required
+    - os: osx
+      osx_image: xcode6.4
 
 install:
-  - export PATH="$PATH:$HOME/.cargo/bin"
   - bash ci/install.sh
 
 script:
