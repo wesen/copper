@@ -23,7 +23,7 @@ main() {
         if [[ $OSX ]]; then
             curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
 
-            install japaric/xargo v0.1.7
+            install japaric/xargo v0.1.8
 
             brew tap caskroom/cask
             brew cask install gcc-arm-embedded
