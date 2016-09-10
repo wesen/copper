@@ -5,6 +5,7 @@
     "executables": true,
     "linker": "arm-none-eabi-gcc",
     "llvm-target": "thumbv6m-none-eabi",
+    "max-atomic-width": 0,
     "no-compiler-rt": true,
     "os": "none",
     "pre-link-args": ["-Tlayout.ld", "-nostartfiles"],
