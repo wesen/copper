@@ -1,8 +1,8 @@
-[![Build Status][status]](https://travis-ci.org/japaric/copper)
+[![Build Status][travis]](https://travis-ci.org/japaric/copper)
 [![Gitter][gitter]](https://gitter.im/japaric/copper)
 
 [gitter]: https://badges.gitter.im/japaric/copper.svg
-[status]: https://travis-ci.org/japaric/copper.svg?branch=master
+[travis]: https://travis-ci.org/japaric/copper.svg?branch=master
 
 # `Copper`
 
