@@ -6,12 +6,13 @@ ARM Cortex-M processors are very popular and are used across many industries. In
 unprecedented performance in a variety of cores from the low power Cortex-M0 to the floating-point
 enabled Cortex-M4F. They are used in everything from your [Fitbit][0], to your [Quadcopter][1], and
 beyond to medical equipment, robotic arms, and automobiles. Also, ARM Cortex-M processors are
-developed by many companies, all using the standard core specified by ARM. This gives embedded systems
-developers a wide range of choice of manufacturer, and feature set. Also, going forward the relatively
-low cost of these 32-bit processors may make 8-bit processors less competitive in both an industrial
-and hobbyist perspective. Even Arduino is moving away from the AVR platform with the [Arduino Zero][2].
+developed by many companies, all using the standard core specified by ARM. This gives embedded
+systems developers a wide range of choice of manufacturer, and feature set. Also, going forward the
+relatively low cost of these 32-bit processors may make 8-bit processors less competitive in both an
+industrial and hobbyist perspective. Even Arduino is moving away from the AVR platform with the
+[Arduino Zero][2].
 
-Also not many microcontroller families that are currently supported by Rust, which uses LLVM at the
+Also not many microcontroller families are currently supported by Rust, which uses LLVM as its
 backend. Popular microcontrollers like AVR, and PIC are not (officially) supported by LLVM
 and as the Rust compiler relies on LLVM for code generation it doesn't support them either. However,
 an [unofficial AVR backend][3] for LLVM is currently undergoing the process of being merged back

@@ -18,7 +18,7 @@ needed). However I've decided to use Rust in this material for the following rea
   encourages not reinventing the wheel by providing access to a central repository where the Rust
   community publishes and shares their crates.
 
-- Testing and documentation infrastructure are provided for, in part, by cargo meaning you don't
+- Testing and documentation infrastructure are provided for, in part, by Cargo meaning you don't
   need to choose from many competing options, or reinvent the wheel
 
 - One can use pretty much all of the existing C tooling on Rust programs. For example:
