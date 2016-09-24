@@ -1,15 +1,41 @@
+# What is a dev board?
+
+Dev board is the short term for "development board". When dealing with embedded systems it is
+typical to have an application specific PCB board which carries the processor you are going to write
+software for. However, sometimes you don't know what your hardware looks like at the start of a
+project, or maybe you want to be able to rapidly prototype by connecting different sensors and
+actuators to your processor without having to make a new PCB board every time. This is where dev
+boards come in, they are essentially the bare minimum you need (sometimes with some additional
+sensors for evaluation) to turn on the processor, program it, and connect things to it. If you are
+familiar with the [Arduino] platform, that is a dev board.
+
+While you can use an emulator to follow along it is more fun, and more rewarding, to make command
+real hardware to do your bidding. So lets choose one!
+
+[Arduino]: https://www.arduino.cc/
+
+> **TODO** A picture would be useful here.
+
 # What dev board should I use/get?
 
-> **FIXME** I haven't defined what a "dev board" is yet!
-
 I won't force you to use a specific dev board. This document has been written in a device-agnostic
-way so you can follow it with pretty much any dev board you want. Nonetheless, some dev boards are
-more easy to work with than others. This section will provide you some advice on how to pick a dev
-board that will make your life easier.
+way so you can follow it with pretty much any dev board you want. Where a specific dev board is
+targeted it will be stated explicitly. Nonetheless, some dev boards are easier to work with than
+others. This section will provide you some advice on how to pick a dev board that will make your
+life easier.
 
-Get/use a dev board:
+When we are choosing a dev board we are looking at the following parameters, which are outlined in
+more detail below:
 
-## That's supported by the OpenOCD project.
+- Supports OpenOCD. Which is what we will use to load and debug compiled binaries of our Rust code.
+- Has good documentation. You always will have the datasheet from the manufacturer, but good and
+  easy to follow documentation on the boards pinout, how it relates to the processor and what other
+  goodies you have is key.
+- Community! Some dev boards have more of a following than others, while others will be using C/C++
+  the community can help with hardware related issues, or maybe even by providing example C code
+  which can be helpful for getting started.
+
+## OpenOCD support
 
 We'll use OpenOCD to "flash" and debug the programs we'll develop. It's best if you can get a dev
 board with a built-in debugger that's supported by OpenOCD. You can see a list of such boards
@@ -46,7 +72,7 @@ and you'll also have to figure out how to wire up everything together.
 
 > **TODO** Add picture of what the connection looks like
 
-## That has good documentation
+## Good documentation
 
 The microcontroller in it should have documentation about:
 
@@ -56,7 +82,7 @@ The microcontroller in it should have documentation about:
 - Hardware bugs (yes, hardware can have bugs too!) or device limitations that may be present in the
   revision of the hardware that you own and how to work around them. This document is known as
   *Silicon Errata* or just *Errata Sheet* ([example][se]).
-  
+
 [rm]: http://www.st.com/resource/en/reference_manual/cd00246267.pdf
 [ds]: http://www.ti.com/lit/ds/symlink/lm3s6965.pdf
 [se]: http://www.st.com/resource/en/errata_sheet/cd00260217.pdf
