@@ -36,7 +36,7 @@ same functionality though. Here are some of the most common ones (using STM32 na
 
 We'll explore these and several other peripherals in more detail in a [later chapter].
 
-[later chapter]: /peripherals.html
+[later chapter]: peripherals.html
 
 > So, how do I use these peripherals?
 
@@ -80,7 +80,7 @@ A microcontroller pin is a exposed metal contact that can be electrically connec
 device. A pin can either be in input mode or in output mode, but it must be in output mode to be
 able to drive (supply current to) an external device. Most pins boot in input mode to avoid
 spuriously driving external devices.
-  
+
 3. Set the pin *high* or *low* to turn on the LED.
 
 *Low* means outputting zero volts (0V) on the pin whereas *high* means outputting a non-zero
@@ -89,7 +89,7 @@ how the LED is wired to the pin, setting the pin low/high should turn it off/on 
 
 After we've confirmed that we can turn the LED on/off, we'll modify the program to toggle the state
 of the LED pin every few seconds.
-  
+
 ## The device-specific details
 
 Now we must fill in the device-specific details to realize our plan. All the needed information will
@@ -263,12 +263,12 @@ OK, here's how I'd debug this program:
 3. You should now be about to execute the instruction that sets the LED pin high. Step from here all
    the way to the endless `loop`. This should toggle the state of the LED at least once. If it
    doesn't, then quite a few things could have gone wrong ... See below:
-   
+
 - Wrong register address as seen in step 2.
 - `GPIO` has not been powered on or configured properly. You'll have to "examine" (`(gdb) x
   $ADDRESS`) all the related registers.
 - You are driving the wrong pin, i.e. one that's not connected to an LED. Confirm this against your
-  dev board user manual. 
+  dev board user manual.
 
 ## Adding a loop
 

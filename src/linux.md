@@ -43,7 +43,7 @@ $ cargo install xargo
 
 ## First OpenOCD connection
 
-[first connection]: /setup/linux.html#First%20connection
+[first connection]: linux.html#First%20connection
 
 > **TODO** document STM32VLDISCOVERY quirk
 

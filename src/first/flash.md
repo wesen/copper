@@ -4,7 +4,7 @@
 > programmer/debugger.
 
 It's time to test our program on real hardware! We'll use OpenOCD  to *flash* our program into the
-microcontroller and then hook `gdb` and OpenOCD to debug our program just like we did before. 
+microcontroller and then hook `gdb` and OpenOCD to debug our program just like we did before.
 
 > Wait, what's flashing?
 
@@ -107,7 +107,7 @@ Before we flash the program we have to "open" an OpenOCD connection between the 
 machine. You should be already familiar with these steps from the [development environment][de]
 chapter:
 
-[de]: /de/linux.html#First%20OpenOCD%20connection
+[de]: linux.html#First%20OpenOCD%20connection
 
 ```
 # Physically connect the dev board to the host machine (probably your laptop), then
@@ -122,7 +122,7 @@ Info : STLINK v1 JTAG v11 API v2 SWIM v0 VID 0x0483 PID 0x3744
 Info : using stlink api v2
 Info : stm32f1x.cpu: hardware has 6 breakpoints, 4 watchpoints
 ```
-    
+
 ## Flash and debug
 
 We'll use the `gdb` shell to both flash and debug the program. So, fire up `gdb`:

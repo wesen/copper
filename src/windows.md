@@ -49,21 +49,21 @@ Open On-Chip Debugger 0.9.0 <2015-08-15-12:41>
 After installing OpenOCD, be sure to test it using [these instructions]. The instructions are for
 Linux but they pretty much hold for Windows: just ignore the `sudo` part of the commands used there.
 
-[these instructions]: /linux.html#First%20OpenOCD%20connection
+[these instructions]: linux.html#First%20OpenOCD%20connection
 
 There are some caveats with using OpenOCD on Windows:
 
 - OpenOCD script search path will be empty. Commands like `openocd -f board/stm32vldiscovery.cfg`
   will fail to find the `.cfg` file. This can be remedied by passing an extra argument to the
   command: `openocd -s Z:\path\to\openocd\share\openocd\scripts -f board/stm32vldiscovery.cfg`.
-  
+
 > **TODO** There must be a better solution to the script search path problem
 
 - Some (hardware) programmers/debuggers (like the ST-LINK/V1) will try to use the "wrong" driver by
   default and the `openocd` command will always fail with `LIBUSB_ERROR_NOT_SUPPORTED`. You'll have
   to switch their driver to the WinUSB driver using Zadig (see the following section for more
   information).
-  
+
 ## (Optional) Zadig
 
 If you are getting the `LIBUSB_ERROR_NOT_SUPPORTED` error when trying to connect to your
@@ -85,7 +85,7 @@ Try the `openocd` command again; it should succeed this time.
 You can find unofficial binaries [here]. Install a recent version and add `;Z:\Program Files\qemu`
 to your `PATH`.
 
-[here]: https://qemu.weilnetz.de/ 
+[here]: https://qemu.weilnetz.de/
 
 Test it with:
 
