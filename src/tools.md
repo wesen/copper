@@ -24,7 +24,7 @@ subsections of this chapter: [Linux], [Mac] and [Windows]
 [Windows]: /windows.html
 
 ## Rust & Cargo: nightly edition
-[rust]: /setup.html#Rust%20%26%20Cargo%3A%20nightly%20edition
+[rust]: /tools.html#Rust%20%26%20Cargo%3A%20nightly%20edition
 
 Rust & Cargo don't need  much explanation. To build Rust programs we'll need the Rust compiler,
 `rustc`, and the Rust package manager, Cargo.
@@ -32,7 +32,7 @@ Rust & Cargo don't need  much explanation. To build Rust programs we'll need the
 What does need justification is the use of the nightly channel. We need to use the nightly channel
 because we'll make use of the following unstable features:
 
-- `asm`: We'll use some inline assembly via the `asm!` syntax extension. But that syntax extension 
+- `asm`: We'll use some inline assembly via the `asm!` syntax extension. But that syntax extension
   hasn't been stabilized.
 - `lang_items`: The need for this feature gate is sometimes artificial. The compiler demands some
   lang times, like `eh_personality` and `panic_fmt`, to be defined even if the functionality they
@@ -41,11 +41,11 @@ because we'll make use of the following unstable features:
   distribute a binary release of that crate for Cortex-M microcontrollers so we have to cross
   compile that crate ourselves. As the `core` crate relies on lots of unstable features, we have to
   use the nightly channel to cross compile it.
-  
-[yet]: https://github.com/rust-lang/rfcs/pull/1645 
+
+[yet]: https://github.com/rust-lang/rfcs/pull/1645
 
 ## A cross C linker: `arm-none-eabi-gcc`
-[gcc]: /setup.html#A%20cross%20C%20linker%3A%20arm-none-eabi-gcc
+[gcc]: /tools.html#A%20cross%20C%20linker%3A%20arm-none-eabi-gcc
 
 (`arm-none-eabi-gcc` is not a linker per se but `rustc` uses it as a proxy for `arm-none-eabi-ld`.)
 
@@ -54,7 +54,7 @@ because we'll make use of the following unstable features:
 `rustc` uses `gcc` to link intermediate object files so we pretty much have no choice.
 
 ## Binary inspection tools
-[binutils]: /setup.html#Binary%20inspection%20tools
+[binutils]: /tools.html#Binary%20inspection%20tools
 
 When working this close to the hardware and with devices that have constrained resources and
 mandatory memory layouts, it's pretty important to inspect the produced binaries to keep track of
@@ -63,18 +63,18 @@ their sizes and to check that the produced binaries follow a specific memory lay
 We'll mainly use the following two tools:
 
 ### `arm-none-eabi-size`
-[size]: /setup.html#arm-none-eabi-size
+[size]: /tools.html#arm-none-eabi-size
 
 To keep an eye on the binary size of our applications.
 
 ### `arm-none-eabi-objdump`
-[objdump]: /setup.html#arm-none-eabi-objdump
+[objdump]: /tools.html#arm-none-eabi-objdump
 
 To confirm the memory layout of our program matches the memory layout constraints of the target
 device.
 
 ## A debugger
-[*db]: /setup.html#A%20debugger
+[*db]: /tools.html#A%20debugger
 
 A debugger is vital when working with microcontrollers as other debugging methods like logging or
 *cough* `println` may not be available. This is specially true when you are just starting out and
@@ -84,13 +84,13 @@ We'll mainly use `arm-none-eabi-gdb` in this document as `lldb` doesn't provide 
 functionality we need.
 
 ## An emulator: QEMU
-[qemu]: /setup.html#An%20emulator%3A%20QEMU
+[qemu]: /tools.html#An%20emulator%3A%20QEMU
 
 Before trying out our first program on real hardware, we'll run it under an emulator to verify that
 the program works as expected.
 
 ## Xargo
-[xargo]: /setup.html#Xargo
+[xargo]: /tools.html#Xargo
 
 In general, cross compiling requires cross compiled "standard" crates like the `core` or the `std`
 crate. Binary releases of these crates for Cortex-M microcontrollers are not provided by the
@@ -128,7 +128,7 @@ OK
 ```
 
 ## OpenOCD
-[openocd]: /setup.html#OpenOCD
+[openocd]: /tools.html#OpenOCD
 
 [OpenOCD] is a tool that lets your computer communicate with devices that support the JTAG/SWD
 communication protocol. We'll use OpenOCD to *flash* (write) our programs into the microcontroller
