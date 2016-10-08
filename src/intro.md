@@ -27,7 +27,7 @@ means to that end.
   analog/digital I/O, communication protocols, timers, etc.
 - Be able to write drivers for these peripherals and be able to compose them into applications.
 - Know how to use existing (C) tooling to inspect, profile and debug the program they wrote.
-  
+
 > **DISCLAIMER** I don't claim to be an authority on embedded software development and much less an
 > authority on embedded software development *with Rust*. The abstractions, programming patterns and
 > development methods I present here are probably *not* the best practices because we don't know
@@ -45,7 +45,7 @@ If you:
 - Would like to share an idea, suggestion or critic
 - Just want to say hi, thanks or whatever is on your mind
 
-[this list]: /unwritten.html
+[this list]: unwritten.html
 
 Feel free to contact [me] via e-mail, the [issue tracker] or this [gitter channel].
 
