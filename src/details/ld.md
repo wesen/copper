@@ -3,7 +3,7 @@
 As we saw in the previous section, our program must comply with a specific memory layout for the
 microcontroller to work properly (otherwise it won't boot!).
 
-The linker is what ultimately determines the memory layout of our program. To some extend, we can
+The linker is what ultimately determines the memory layout of our program. To some extent, we can
 control the linker, and therefore the memory layout of our program, using a file called linker
 script.
 
