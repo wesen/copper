@@ -16,7 +16,7 @@ external world.
 > Awesome, what can I do with these peripherals?
 
 All sort of things! There are several different types of peripherals, each one provides a different
-functionality. Microcontrollers manufacturers call them by different names even if the provide the
+functionality. Microcontrollers manufacturers call them by different names even if they provide the
 same functionality though. Here are some of the most common ones (using STM32 naming convention):
 
 - `GPIO`. General Purpose Input/Output. Can be used to turn on/off external devices (e.g. a motor, a
