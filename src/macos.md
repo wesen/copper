@@ -31,9 +31,7 @@ $ cargo install xargo
 
 ## Testing OpenOCD
 
-Follow [these instructions] to test connecting to your programmer/debugger using OpenOCD.
+Follow [these instructions] to test connecting to your programmer/debugger using
+OpenOCD.
 
 [these instructions]: linux.html#First%20OpenOCD%20connection
-
-
-> **TODO** Any permission problems on Mac? i.e. Do we actually need to use `sudo`?
