@@ -3,75 +3,17 @@
 #![no_main]
 #![no_std]
 
-#[no_mangle]
-pub fn start() -> ! {
-    turn_on_gpioc();
-    put_pc8_in_output_mode();
+#[export_name = "_reset"]
+pub extern "C" fn main() -> ! {
+    power_on_gpioe();
+    put_pe9_in_output_mode();
 
-    let mut ticks = 100_000;
+    let ticks = 100_000;
     loop {
-        set_pc8_high();
+        set_pe9_high();
         delay(ticks);
-        set_pc8_low();
+        set_pe9_low();
         delay(ticks);
-    }
-}
-
-fn turn_on_gpioc() {
-    /// Start address of the RCC register block
-    const RCC: u32 = 0x4002_1000;
-
-    /// Offset address of the APB2ENR register
-    const RCC_APB2ENR: u32 = 0x18;
-
-    /// IOPCEN bit mask
-    const RCC_APB2ENR_IOPCEN: u32 = 1 << 4;
-
-    unsafe {
-        // Pointer to the APB2ENR register
-        let apb2enr = (RCC + RCC_APB2ENR) as *mut u32;
-
-        // IOPECN = 1
-        *apb2enr |= RCC_APB2ENR_IOPCEN;
-    }
-}
-
-/// Start address of the GPIOC register block
-const GPIOC: u32 = 0x4001_1000;
-
-/// Offset address of the BSRR register
-const GPIOC_BSRR: u32 = 0x10;
-
-fn put_pc8_in_output_mode() {
-    /// Offset address of the CRH register
-    const GPIOC_CRH: u32 = 0x4;
-
-    unsafe {
-        // Pointer to the CRH register
-        let crh = (GPIOC + GPIOC_CRH) as *mut u32;
-
-        // CNF8 = 0b00, MODE8 = 0b10
-        *crh = *crh & !0b1111 | 0b0010;
-    }
-}
-
-fn set_pc8_high() {
-    unsafe {
-        // Pointer to the BSRR register
-        let bsrr = (GPIOC + GPIOC_BSRR) as *mut u32;
-
-        // BS8 = 1
-        *bsrr = 1 << 8;
-    }
-}
-
-fn set_pc8_low() {
-    unsafe {
-        // Pointer to the BSRR register
-        let bsrr = (GPIOC + GPIOC_BSRR) as *mut u32;
-
-        // BR8 = 1
-        *bsrr = 1 << (16 + 8);
     }
 }
 
@@ -79,38 +21,91 @@ fn delay(n: u32) {
     for _ in 0..n {}
 }
 
+fn power_on_gpioe() {
+    /// Start address of the RCC register block
+    const RCC: u32 = 0x4002_1000;
+
+    /// Offset address of the AHBENR register
+    const RCC_AHBENR: u32 = 0x14;
+
+    /// IOPCEN bit mask
+    const RCC_AHBENR_IOPEEN: u32 = 1 << 21;
+
+    unsafe {
+        // Pointer to the AHBENR register
+        let ahbenr = (RCC + RCC_AHBENR) as *mut u32;
+
+        // IOPECN = 1
+        *ahbenr |= RCC_AHBENR_IOPEEN;
+    }
+}
+
+/// Start address of the GPIOC register block
+const GPIOE: u32 = 0x4800_1000;
+
+/// Offset address of the BSRR register
+const GPIOE_BSRR: u32 = 0x18;
+
+fn put_pe9_in_output_mode() {
+    /// Offset address of the CRH register
+    const GPIOE_MODER: u32 = 0x0;
+
+    unsafe {
+        // Pointer to the MODER register
+        let moder = (GPIOE + GPIOE_MODER) as *mut u32;
+
+        // MODER9 = 0b01
+        *moder = (*moder & !(0b11 << 18)) | (0b01 << 18)
+    }
+}
+
+fn set_pe9_high() {
+    unsafe {
+        // Pointer to the BSRR register
+        let bsrr = (GPIOE + GPIOE_BSRR) as *mut u32;
+
+        // BS9 = 1
+        *bsrr = 1 << 9;
+    }
+}
+
+fn set_pe9_low() {
+    unsafe {
+        // Pointer to the BSRR register
+        let bsrr = (GPIOE + GPIOE_BSRR) as *mut u32;
+
+        // BR9 = 1
+        *bsrr = 1 << (16 + 9);
+    }
+}
+
 mod exception {
-    pub fn handler() -> ! {
+    pub extern "C" fn handler() {
         unsafe {
             asm!("bkpt");
         }
 
         loop {}
     }
-}
 
-mod vector_table {
-    #[link_section = ".reset"]
-    static RESET: fn() -> ! = ::start;
-
-    #[link_section = ".exceptions"]
-    static EXCEPTIONS: [Option<fn() -> !>; 14] = [Some(::exception::handler), // NMI
-                                                  Some(::exception::handler), // Hard fault
-                                                  Some(::exception::handler), // Memory management fault
-                                                  Some(::exception::handler), // Bus fault
-                                                  Some(::exception::handler), // Usage fault
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  Some(::exception::handler), // SVCall
-                                                  None, // Reserved for Debug
-                                                  None, // Reserved
-                                                  Some(::exception::handler), // PendSV
-                                                  Some(::exception::handler)]; // Systick
+    #[export_name = "_EXCEPTIONS"]
+    pub static EXCEPTIONS: [Option<extern "C" fn()>; 14] = [Some(handler), // NMI
+                                                            Some(handler), // Hard fault
+                                                            Some(handler), // Memmanage fault
+                                                            Some(handler), // Bus fault
+                                                            Some(handler), // Usage fault
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            Some(handler), // SVCall
+                                                            None, // Reserved for Debug
+                                                            None, // Reserved
+                                                            Some(handler), // PendSV
+                                                            Some(handler)]; // Systick
 }
 
 mod lang_items {
     #[lang = "panic_fmt"]
-    extern fn panic_fmt() {}
+    extern "C" fn panic_fmt() {}
 }

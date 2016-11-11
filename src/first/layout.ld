@@ -1,3 +1,5 @@
+ENTRY(_reset);
+
 MEMORY
 {
   FLASH : ORIGIN = 0x00000000, LENGTH = 256K
@@ -6,14 +8,16 @@ MEMORY
 
 SECTIONS
 {
-  .vector_table ORIGIN(FLASH) :
-  {
-    LONG(ORIGIN(RAM) + LENGTH(RAM))
-    KEEP(*(.reset))
-  } > FLASH
-
   .text :
   {
+    /* Vector table */
+    LONG(ORIGIN(RAM) + LENGTH(RAM))
+    LONG(_reset + 1);
+
+    /* Reset handler */
+    _reset = .;
+    *(.text._reset)
+
     *(.text*)
   } > FLASH
 
