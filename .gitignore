@@ -1,4 +1,4 @@
 *.org
 *.rs.bk
-app/*/target
 book
+target
