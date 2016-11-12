@@ -26,8 +26,6 @@ install:
   - rustup component add rust-src
 
 script:
-  - cargo generate-lockfile
-
   - if [ $TRAVIS_OS_NAME = linux ]; then
       sh ci/run-docker.sh $TARGET || exit 1;
     else

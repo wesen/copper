@@ -10,7 +10,6 @@ run() {
            --rm \
            --user $(id -u):$(id -g) \
            -e CARGO_HOME=/cargo \
-           -e CARGO_TARGET_DIR=/target \
            -e DEPLOY_VERSION=$DEPLOY_VERSION \
            -e TARGET=$1 \
            -e TRAVIS_OS_NAME=linux \
@@ -18,9 +17,7 @@ run() {
            -e TRAVIS_TAG=$TRAVIS_TAG \
            -e USER=$USER \
            -v $HOME/.cargo:/cargo \
-           -v `pwd`/target:/target \
-           -v `pwd`:/checkout:ro \
-           -v `pwd`/book:/checkout/book \
+           -v `pwd`:/checkout \
            -v `rustc --print sysroot`:/rust:ro \
            -w /checkout \
            -it $1 \

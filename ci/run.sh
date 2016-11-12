@@ -14,7 +14,7 @@ test_mode() {
 
         cd $app
         xargo build --target $target
-        arm-none-eabi-objdump -Cd ${CARGO_TARGET_DIR:-target}/$target/debug/app
+        arm-none-eabi-objdump -Cd target/$target/debug/app
         cd ../..
     done
 
