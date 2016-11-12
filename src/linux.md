@@ -13,9 +13,9 @@ Alternatively, instead of using this docker image, you can ...
 
 ## Install the tools on your system
 
-On most Linux distributions, most of the required tools can be installed via the package manager.
-The actual command that you need to call will depend on your Linux distribution. But, here's the one
-for Ubuntu:
+On most Linux distributions, most of the required tools can be installed via the
+package manager. The actual command that you need to call will depend on your
+Linux distribution. But, here's the one for Ubuntu:
 
 ```
 $ sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi openocd qemu-system-arm
@@ -35,10 +35,17 @@ Or if you already have rustup installed, switch to the nightly channel with:
 $ rustup default nightly
 ```
 
-Finally, to install Xargo simply use:
+To install Xargo simply use:
 
 ```
 $ cargo install xargo
+```
+
+Note that Xargo 0.2.0+ depends on the `rust-src` component, so install that as
+well:
+
+```
+$ rustup component add rust-src
 ```
 
 ## First OpenOCD connection
@@ -47,10 +54,11 @@ $ cargo install xargo
 
 > **TODO** document STM32VLDISCOVERY quirk
 
-Even if using the Docker image, it's a good idea to test that OpenOCD works by establishing a
-connection between your host system (PC, laptop, etc.) and your dev board. First, you'll have to
-physically connect your dev board and your host system via an USB cable. Then, you'll have to use a
-command that looks like this:
+Even if using the Docker image, it's a good idea to test that OpenOCD works by
+establishing a connection between your host system (PC, laptop, etc.) and your
+dev board. First, you'll have to physically connect your dev board and your host
+system via an USB cable. Then, you'll have to use a command that looks like
+this:
 
 ```
 $ sudo openocd -f board/$BOARD
@@ -62,7 +70,8 @@ if you are using a dev board that has a built-in debugger. Or one like this:
 $ sudo openocd -f interface/$INTERFACE -f target/$TARGET
 ```
 
-if you are using an external programmer/debugger. Then, you should get an output like this:
+if you are using an external programmer/debugger. Then, you should get an output
+like this:
 
 ```
 Open On-Chip Debugger 0.9.0 (2015-09-02-10:42)
@@ -83,12 +92,15 @@ Info : using stlink api v2
 Info : stm32f1x.cpu: hardware has 6 breakpoints, 4 watchpoints
 ```
 
-> **TODO** add troubleshooting instructions for when the `openocd` command fails.
+> **TODO** add troubleshooting instructions for when the `openocd` command
+> fails.
 
-The program will block with that output, but it's okay to exit it with `Ctrl-C` at this time.
+The program will block with that output, but it's okay to exit it with `Ctrl-C`
+at this time.
 
-As for the actual values of `$BOARD`/`$INTERFACE`/`$TARGET` that you must use, the possible values
-are in `/usr/share/openocd/scripts` (might be a different directory in your Linux distribution):
+As for the actual values of `$BOARD`/`$INTERFACE`/`$TARGET` that you must use,
+the possible values are in `/usr/share/openocd/scripts` (might be a different
+directory in your Linux distribution):
 
 ```
 $ tree /usr/share/openocd/scripts
@@ -109,28 +121,30 @@ $ tree /usr/share/openocd/scripts
 └── (...)
 ```
 
-Try something that resembles the name of your hardware. For example, for the STM32VLDISCOVERY I
-use:
+Try something that resembles the name of your hardware. For example, for the
+STM32VLDISCOVERY I use:
 
 ```
 $ sudo openocd -f board/stm32vldiscovery.cfg
 ```
 
-And for my custom STM32F4-based dev board which uses an external debugger I use:
+And for the STM32F3DISCOVERY, I use:
 
 ```
-$ sudo openocd -f interface/stlink-v1.cfg -f target/stm32f4x.cfg
+$ sudo openocd -f interface/stlink-v2-1.cfg -f target/stm32f3x.cfg
 ```
 
 ### (Optional) OpenOCD without `sudo`
 
-> **NOTE** For those using the Docker image. You have to run these commands on the host system,
-> *not* from within the container.
+> **NOTE** For those using the Docker image. You have to run these commands on
+> the host system, *not* from within the container.
 
-The reason we have to use `sudo` in the `openocd` invocations is that we don't have sufficient
-permissions to use the USB device. This can be fixed using `udev` rules.
+The reason we have to use `sudo` in the `openocd` invocations is that we don't
+have sufficient permissions to use the USB device. This can be fixed using
+`udev` rules.
 
-First let's identify the USB device OpenOCD is using from the output of `sudo openocd`:
+First let's identify the USB device OpenOCD is using from the output of `sudo
+openocd`:
 
 ```
 $ sudo openocd
@@ -150,8 +164,9 @@ $ ls -l /dev/bus/usb/003/116
 crw-rw-r-- 1 root root 189, 371 May  9 15:39 /dev/bus/usb/003/116
 ```
 
-Only `root` can read/write from/to it. We'll write an udev rule to change the permissions of this
-particular USB device. udev rules are stored in `/etc/udev/rules.d` as files, let's add a new one:
+Only `root` can read/write from/to it. We'll write an udev rule to change the
+permissions of this particular USB device. udev rules are stored in
+`/etc/udev/rules.d` as files, let's add a new one:
 
 ```
 $ cat /etc/udev/rules.d/99-openocd.rules
@@ -161,16 +176,17 @@ ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3744", GROUP="users"
 
 This udev rule changes the group of the USB device to `users`.
 
-> **NOTE** You *can* use a group different than `users`. **But**, if you are using a Docker
-> container, it's very likely that the id of a different group won't match between the host system
-> and the container -- in that case you still won't have enough permissions to use the USB device!.
+> **NOTE** You *can* use a group different than `users`. **But**, if you are
+> using a Docker container, it's very likely that the id of a different group
+> won't match between the host system and the container -- in that case you
+> still won't have enough permissions to use the USB device!.
 
 > **NOTE** For more details about the udev rules see [man 7 udev]
 
 [man 7 udev]: http://linux.die.net/man/7/udev
 
-You'll have to change 0483 and 3744 for the vendor and product id of **your** device respectively.
-You can get those values from `lsusb`:
+You'll have to change 0483 and 3744 for the vendor and product id of **your**
+device respectively. You can get those values from `lsusb`:
 
 ```
 $ lsusb | grep STLINK
@@ -194,9 +210,9 @@ $ ls -l /dev/bus/usb/003/118
 crw-rw-r-- 1 root users 189, 373 May  9 16:00 /dev/bus/usb/003/118
 ```
 
-You should now be able to use your `openocd` command without `sudo` **if** your user was already
-part of the `users` group. If your user wasn't in that group, you can add yourself to this group
-with this command:
+You should now be able to use your `openocd` command without `sudo` **if** your
+user was already part of the `users` group. If your user wasn't in that group,
+you can add yourself to this group with this command:
 
 ```
 $ sudo usermod -a -G users $(whoami)

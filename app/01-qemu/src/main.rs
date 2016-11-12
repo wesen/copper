@@ -2,20 +2,16 @@
 #![no_main]
 #![no_std]
 
-#[no_mangle]
-pub fn start() -> ! {
+#[export_name = "_reset"]
+pub extern "C" fn main() -> ! {
+    let y;
     let x = 42;
-    let y = x;
+    y = x;
 
     loop {}
 }
 
-mod vector_table {
-    #[link_section = ".reset"]
-    static RESET: fn() -> ! = ::start;
-}
-
 mod lang_items {
     #[lang = "panic_fmt"]
-    extern fn panic_fmt() {}
+    extern "C" fn panic_fmt() {}
 }

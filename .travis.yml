@@ -1,33 +1,64 @@
-language: generic
+cache: cargo
+dist: trusty
+language: rust
+rust: nightly
+services: docker
+sudo: required
+
+env:
+  global:
+    - secure: ks5KjO2B+zc6X2nEnPPkaFLYaEvVW2bZ50Ow2vTPFudl27+//zXRfqAn6lxdgXngf47F5fxOVaHpaNE5Qm68PWiUOroThBXss8SqKtxfJb9MJJb/UlmYrrCjWXvBfZv2PsRLWzaYA87oMaHIAOuJ5B6zDX7FKEM/BxAT6SVzziJveSEF9wmRwMNk3t1E6nn6j5nUtfFEo0prUGaA/Qf3s+L/g9PQWLLzjjVfKzZjEab5SpK7LFdqGhbzBCNwp1o/052RqS/6nKOhJ9kYNhoxM604u77jynTwgVzF0EY5dV9dYnxyQQCvl0W/CBM649nmc1iQXUDax20GOEQmuGz3kbPN3+64H901AlChtqKKSQSBBYjbUeejiQvxNhoJii3wrNT9wa4gjR+zSOYJm6zunZrCLydyT/tUGCKLVGYdc23eyH2OD4XoqXC6gbGYTxoWUgjEXyiuwfvmA7c5gyax0ul+Nx65a0HBBExenAoOddP0LH9rvUxrSnTW1Mg1guKE3iLXv+c/XuNFmOKlcR6PfZEQluiTg4JyikxFCgGFEuvdNuAHALXHk9+9MsmNITVMiO/G9d4DO0kWDs623gMTNHUcTZhFyZ95Y0ZCQ7WByBsZkVQgWSOWx30MKzxLYH/o89ESqMwv77yrVnBXbZtU2k/SPWmKWj6ETk6/HriEflk=
+    - CRATE_NAME=trust
+    - DEPLOY_VERSION=nightly
+    - TARGET=x86_64-unknown-linux-gnu
 
 matrix:
   include:
-    - os: linux
-      services: docker
-      sudo: required
-    - os: osx
-      osx_image: xcode6.4
+    - env: TARGET=x86_64-apple-darwin
+      os: osx
 
 install:
-  - bash ci/install.sh
+  - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $TRAVIS_RUST_VERSION
+
+  - source ~/.cargo/env
+
+  - test $TRAVIS_OS_NAME = linux || (
+      curl -LSfs https://japaric.github.io/trust/install.sh |
+      sh -s -- --force --git japaric/xargo --tag v0.2.1 &&
+      brew tap caskroom/cask &&
+      brew cask install gcc-arm-embedded
+    )
+
+  - rustup component add rust-src
 
 script:
-  - bash ci/script.sh
+  - if [ $TRAVIS_OS_NAME = linux ]; then
+      sh ci/run-docker.sh $TARGET || exit 1;
+    else
+      sh ci/run.sh || exit 1;
+    fi
+
+  # Travis can't cache files that are not readable by "others"
+  - chmod -R a+r $HOME/.cargo
 
 after_success:
-  - bash ci/after_success.sh
+  - if [ $TARGET = x86_64-unknown-linux-gnu ] && [ $TRAVIS_PULL_REQUEST = false ]; then
+      mkdir ghp-import;
+
+      curl -Ls https://github.com/davisp/ghp-import/archive/master.tar.gz |
+        tar --strip-components 1 -C ghp-import -xz;
+
+      ./ghp-import/ghp_import.py book;
+
+      git push -fq https://$GH_TOKEN@github.com/$TRAVIS_REPO_SLUG.git gh-pages && echo OK;
+    fi
 
 branches:
   only:
     - auto
-    - master
     - try
+    - master
 
 notifications:
   email:
     on_success: never
-  webhooks: https://homu.herokuapp.com/travis
-
-env:
-  global:
-    - secure: kJof1o+nrjiqS+w8TDDTxhApprxcjksSeovpumuc9eCMGK+4mqtjdl7AGP9AYbIYWAJEF80FJTvXyzviZs7Ov+K52YuLXVkfGSM4v1Gm9NZol6H208QLmggBhsbNzyu3v+/RUTVE3foDAANxhOVXSlLRc8thd9TfzFMRHhna63uNDNLbzE7A1a/etPGLe6QSIGXlQ/EKNUGxA2vTr15xlzm5qmLILHIEGuLEw8IMk0dd8eDYF+vQuQXFnWYL3Wx1MCqk88OK9KpMNR4Rujuewsgb3ODM56y67mRnMyu1wXoN4idXaeGy2S/M3XCdwY0vt/7WTkluTGQ3PQu8tsM5unV50/1x78xw7uEsMFd7g5IJXrsZB00vrrgXjJ/6oOZcNWhWX+LdPa+keyBau6KedPhVt9yFqhgeDIh8+qIDfVGzMmvCN8rcmWQc5z8f370kD7B9/oNp8FPazpU83gtCuWdKLKtxigVCNZWLxiMnH/y4fmNJUqOY0wbyDucNO+io72MNQTLIw5eMNWV7FDgU2pbexckUq763ZmhBhMYwo8e1583mi8jJy8j/hHYWFA4hsnA/5McdBUqxuWZLg2RgB9mJ8EYAJkGE4g2TR+W9GX6pj/xfQ7jLUe8HBgqUKBtDAMz/ZtpU1kpb4IQb1b6uoZci/zWBwCGRGtzJtzak064=

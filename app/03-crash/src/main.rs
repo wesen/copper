@@ -3,8 +3,8 @@
 #![no_main]
 #![no_std]
 
-#[no_mangle]
-pub fn start() -> ! {
+#[export_name = "_reset"]
+pub extern "C" fn main() -> ! {
     unsafe {
         let sram_boundary = *(0x0000_0000 as *const u32);
         let _crash = *(sram_boundary as *const u32);
@@ -14,37 +14,32 @@ pub fn start() -> ! {
 }
 
 mod exception {
-    pub fn handler() -> ! {
+    pub extern "C" fn handler() {
         unsafe {
             asm!("bkpt");
         }
 
         loop {}
     }
-}
 
-mod vector_table {
-    #[link_section = ".reset"]
-    static RESET: fn() -> ! = ::start;
-
-    #[link_section = ".exceptions"]
-    static EXCEPTIONS: [Option<fn() -> !>; 14] = [Some(::exception::handler), // NMI
-                                                  Some(::exception::handler), // Hard fault
-                                                  Some(::exception::handler), // Memory management fault
-                                                  Some(::exception::handler), // Bus fault
-                                                  Some(::exception::handler), // Usage fault
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  None, // Reserved
-                                                  Some(::exception::handler), // SVCall
-                                                  None, // Reserved for Debug
-                                                  None, // Reserved
-                                                  Some(::exception::handler), // PendSV
-                                                  Some(::exception::handler)]; // Systick
+    #[export_name = "_EXCEPTIONS"]
+    pub static EXCEPTIONS: [Option<extern "C" fn()>; 14] = [Some(handler), // NMI
+                                                            Some(handler), // Hard fault
+                                                            Some(handler), // Memmanage fault
+                                                            Some(handler), // Bus fault
+                                                            Some(handler), // Usage fault
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            Some(handler), // SVCall
+                                                            None, // Reserved for Debug
+                                                            None, // Reserved
+                                                            Some(handler), // PendSV
+                                                            Some(handler)]; // Systick
 }
 
 mod lang_items {
     #[lang = "panic_fmt"]
-    extern fn panic_fmt() {}
+    extern "C" fn panic_fmt() {}
 }
