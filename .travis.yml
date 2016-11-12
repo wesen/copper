@@ -14,7 +14,6 @@ env:
 
 matrix:
   include:
-    # OSX
     - env: TARGET=x86_64-apple-darwin
       os: osx
 
@@ -25,7 +24,9 @@ install:
 
   - test $TRAVIS_OS_NAME = linux ||
       curl -LSfs https://japaric.github.io/trust/install.sh |
-      sh -s -- --force --git japaric/xargo
+      sh -s -- --force --git japaric/xargo --tag v0.2.1 &&
+      brew tap caskroom/cask &&
+      brew cask install gcc-arm-embedded
 
   - rustup component add rust-src
 
