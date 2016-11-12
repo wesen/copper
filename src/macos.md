@@ -23,10 +23,17 @@ Or if you already have rustup installed, switch to the nightly channel with:
 $ rustup default nightly
 ```
 
-Finally, to install Xargo simply use:
+To install Xargo simply use:
 
 ```
 $ cargo install xargo
+```
+
+Note that Xargo 0.2.0+ depends on the `rust-src` component so install that as
+well:
+
+```
+$ rustup component add rust-src
 ```
 
 ## Testing OpenOCD
