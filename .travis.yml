@@ -23,6 +23,10 @@ install:
 
   - source ~/.cargo/env
 
+  - [ $TRAVIS_OS_NAME = linux ] ||
+      curl -LSfs https://japaric.github.io/trust/install.sh |
+      sh -s -- --force --git japaric/xargo
+
   - rustup component add rust-src
 
 script:
