@@ -9,7 +9,6 @@ env:
   global:
     - secure: ks5KjO2B+zc6X2nEnPPkaFLYaEvVW2bZ50Ow2vTPFudl27+//zXRfqAn6lxdgXngf47F5fxOVaHpaNE5Qm68PWiUOroThBXss8SqKtxfJb9MJJb/UlmYrrCjWXvBfZv2PsRLWzaYA87oMaHIAOuJ5B6zDX7FKEM/BxAT6SVzziJveSEF9wmRwMNk3t1E6nn6j5nUtfFEo0prUGaA/Qf3s+L/g9PQWLLzjjVfKzZjEab5SpK7LFdqGhbzBCNwp1o/052RqS/6nKOhJ9kYNhoxM604u77jynTwgVzF0EY5dV9dYnxyQQCvl0W/CBM649nmc1iQXUDax20GOEQmuGz3kbPN3+64H901AlChtqKKSQSBBYjbUeejiQvxNhoJii3wrNT9wa4gjR+zSOYJm6zunZrCLydyT/tUGCKLVGYdc23eyH2OD4XoqXC6gbGYTxoWUgjEXyiuwfvmA7c5gyax0ul+Nx65a0HBBExenAoOddP0LH9rvUxrSnTW1Mg1guKE3iLXv+c/XuNFmOKlcR6PfZEQluiTg4JyikxFCgGFEuvdNuAHALXHk9+9MsmNITVMiO/G9d4DO0kWDs623gMTNHUcTZhFyZ95Y0ZCQ7WByBsZkVQgWSOWx30MKzxLYH/o89ESqMwv77yrVnBXbZtU2k/SPWmKWj6ETk6/HriEflk=
     - CRATE_NAME=trust
-    - DEPLOY_VERSION=nightly
     - TARGET=x86_64-unknown-linux-gnu
 
 matrix:
@@ -18,31 +17,42 @@ matrix:
       os: osx
 
 install:
-  - curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $TRAVIS_RUST_VERSION
+  - if [ $TRAVIS_BRANCH != master ]; then
+      curl https://sh.rustup.rs -sSf |
+        sh -s -- -y --default-toolchain $TRAVIS_RUST_VERSION;
 
-  - source ~/.cargo/env
+      source ~/.cargo/env;
 
-  - test $TRAVIS_OS_NAME = linux || (
-      curl -LSfs https://japaric.github.io/trust/install.sh |
-      sh -s -- --force --git japaric/xargo --tag v0.2.1 &&
-      brew tap caskroom/cask &&
-      brew cask install gcc-arm-embedded
-    )
+      test $TRAVIS_OS_NAME = linux || (
+        curl -LSfs https://japaric.github.io/trust/install.sh |
+          sh -s -- --force --git japaric/xargo --tag v0.2.1 &&
+        brew tap caskroom/cask &&
+        brew cask install gcc-arm-embedded
+      );
 
-  - rustup component add rust-src
+      rustup component add rust-src;
+    fi;
+
 
 script:
-  - if [ $TRAVIS_OS_NAME = linux ]; then
-      sh ci/run-docker.sh $TARGET || exit 1;
-    else
-      sh ci/run.sh || exit 1;
+  # chmod: Travis can't cache files that are not readable by "others"
+  - if [ $TRAVIS_BRANCH != master ]; then
+      if [ $TRAVIS_OS_NAME = linux ]; then
+        sh ci/run-docker.sh $TARGET || exit 1;
+      else
+        sh ci/run.sh || exit 1;
+      fi;
+
+      chmod -R a+r $HOME/.cargo;
     fi
 
-  # Travis can't cache files that are not readable by "others"
-  - chmod -R a+r $HOME/.cargo
-
 after_success:
-  - if [ $TARGET = x86_64-unknown-linux-gnu ] && [ $TRAVIS_PULL_REQUEST = false ]; then
+  - if [ $TARGET = x86_64-unknown-linux-gnu ] && [ $TRAVIS_BRANCH = master ] && [ $TRAVIS_PULL_REQUEST = false ]; then
+      curl -LSfs https://japaric.github.io/trust/install.sh |
+        sh -s -- --git azerupi/mdbook --tag v0.0.14 --to .;
+
+      ./mdbook build;
+
       mkdir ghp-import;
 
       curl -Ls https://github.com/davisp/ghp-import/archive/master.tar.gz |
