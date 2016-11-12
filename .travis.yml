@@ -41,7 +41,7 @@ script:
   - chmod -R a+r $HOME/.cargo
 
 after_success:
-  - if [ $TRAVIS_OS_NAME = linux ] && [ $TRAVIS_PULL_REQUEST = false ]; then
+  - if [ $TARGET = x86_64-unknown-linux-gnu ] && [ $TRAVIS_PULL_REQUEST = false ]; then
       mkdir ghp-import;
 
       curl -Ls https://github.com/davisp/ghp-import/archive/master.tar.gz |

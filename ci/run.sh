@@ -18,7 +18,7 @@ test_mode() {
         cd ../..
     done
 
-    if [ $TRAVIS_OS_NAME = linux ]; then
+    if [ $TARGET = x86_64-unknown-linux-gnu ]; then
         mdbook build
     fi
 }
