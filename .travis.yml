@@ -55,6 +55,7 @@ branches:
   only:
     - auto
     - try
+    - master
 
 notifications:
   email:
