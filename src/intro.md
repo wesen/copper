@@ -1,9 +1,14 @@
 # Introduction
 
+> **UPDATE (2016-11-15)** I'm currently re-purposing this book to be more like a
+> reference about low level details of Rust programs for Cortex-M micros. Thus
+> it's in a state of flux right now. If you are looking for a more beginner
+> friendly text, check out the [Discovery] book.
+
+[Discovery]: https://japaric.github.io/discovery
+
 > **WARNING** This is a work in progress! It's incomplete and some
 > chapters/sections are still in draft phase.
-
-> **TODO** Add a GIF of a cool demo
 
 The goal of this book is to get you started in *microcontroller software
 development*. We'll mainly cover *bare metal programming* (programming directly
