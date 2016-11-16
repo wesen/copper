@@ -63,6 +63,18 @@ Depending on the micro in your dev board, you may also have to change the
 STM32F303VCT6 contains a Cortex-M4F processor with FPU so I need to switch to the
 `thumbv7em-none-eabihf` target.
 
+If you change the target, you'll also need to update the `.cargo/config` file to
+port the configuration to the new target:
+
+``` diff
+-[target.thumbv7m-none-eabi]
++[target.thumbv7em-none-eabihf]
+ rustflags = [
+     "-C", "link-arg=-Tlayout.ld",
+     "-C", "link-arg=-nostartfiles",
+ ]
+```
+
 ## Build & inspect
 
 Now that the changes have been committed, we can rebuild the program:

@@ -20,7 +20,7 @@ The rest of this page will justify each of these tools. For installation
 instructions check the subsections of this chapter: [Linux], [Mac] and [Windows]
 
 [Linux]: linux.html
-[Mac]: osx.html
+[Mac]: macos.html
 [Windows]: windows.html
 
 ## Rust & Cargo: nightly edition

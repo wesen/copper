@@ -9,7 +9,10 @@ $ cargo new --bin app && cd $_
 And then add these files to the project:
 
 - [layout.ld](./first/layout.ld) - a "linker script"
-- [.cargo/config](./first/config) - a project local Cargo configuration file
+
+- [.cargo/config](./first/config.toml) - a project local Cargo configuration
+  file
+
 - [src/main.rs](./first/main.rs)
 
 I'll explain what the linker script and the Cargo configuration file are for in

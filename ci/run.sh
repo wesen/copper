@@ -20,6 +20,7 @@ test_mode() {
 
     if [ $TARGET = x86_64-unknown-linux-gnu ]; then
         mdbook build
+        linkchecker book
     fi
 }
 
