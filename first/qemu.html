@@ -1,0 +1,251 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="../">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html" class="active"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Run the program under QEMU</h1>
+<p>Now that we have an executable in our hands, it's time to test it under an
+emulator! You may be wondering &quot;how are we going to do that?&quot; since the program
+doesn't do any I/O. Well, instead of expecting the program to output something
+to the terminal (which won't happen), we are going to &quot;hook&quot; a debugger to the
+emulator, execute the program &quot;statement by statement&quot; and verify that the
+emulated memory changes as the program executes. Sounds fun? You bet it is.</p>
+<p>Let's start! The first thing we have to do is load our binary in the emulator
+with this command:</p>
+<pre><code>$ qemu-system-arm \
+    -cpu cortex-m3 \
+    -machine lm3s6965evb \
+    -gdb tcp::3333 \
+    -S \
+    -nographic -monitor null \
+    -serial null \
+    -kernel target/thumbv7m-none-eabi/debug/app
+</code></pre>
+<p>So many arguments! Let's explain why all those are there for:</p>
+<ul>
+<li>
+<p><code>qemu-system-arm</code> this is a QEMU variant that can emulate an ARM processor in
+system mode emulation.</p>
+</li>
+<li>
+<p><code>-machine lm3s6965evb</code> this is the dev board we are going to emulate: the
+<a href="http://www.ti.com/lit/ug/spmu029a/spmu029a.pdf">LM3S6965EVB</a>.</p>
+</li>
+<li>
+<p><code>-cpu cortex-m3</code> this is the CPU to emulate, it must match the CPU of the
+emulated <code>machine</code>.</p>
+</li>
+<li>
+<p><code>-gdb tcp::3333</code> tells the emulator to expect a gdb connection on port <code>3333</code>,
+we need this to control the execution of the emulated program under gdb.</p>
+</li>
+<li>
+<p><code>-S</code> &quot;do not immediately start the CPU&quot;. This tells the emulator to load the
+program but don't immediately execute it, otherwise by the time you attach
+<code>gdb</code> your program may have already terminated!</p>
+</li>
+<li>
+<p><code>-nographic</code>, <code>-monitor null</code> we don't need anything graphic related</p>
+</li>
+<li>
+<p><code>-serial null</code> we are not going to use the serial console this time</p>
+</li>
+<li>
+<p><code>-kernel target/thumbv7m-none-eabi/debug/app</code> use our binary directly as the
+&quot;kernel&quot; which is the first thing the emulator executes.</p>
+</li>
+</ul>
+<p>This command will block; just leave it running for now.</p>
+<p>Next we hook a debugger to the emulator we just started. In another terminal,
+type:</p>
+<pre><code>$ arm-none-eabi-gdb -q target/thumbv7m-none-eabi/debug/app
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> You can use <code>lldb</code> instead of <code>gdb</code> but you won't be able to use the
+same commands I have used here, because <code>lldb</code> uses different commands to
+expose the same functionality as <code>gdb</code>. <a href="http://lldb.llvm.org/lldb-gdb.html">This page</a> will help you map <code>gdb</code>
+commands to <code>lldb</code>'s and vice versa.</p>
+</blockquote>
+<p>Under this <code>gdb</code> session, enter the following command to connect to the
+emulator:</p>
+<pre><code>(gdb) target remote :3333
+</code></pre>
+<p>You should see an output like this:</p>
+<pre><code>Remote debugging using :3333
+app::main () at $PWD/src/main.rs:6
+6       pub extern &quot;C&quot; fn main() -&gt; ! {
+</code></pre>
+<p>The emulator is <em>halted</em> and currently at the program entry point: <code>main</code>. You
+can now execute the program statement by statement using the <code>step</code> command:</p>
+<pre><code>(gdb) step
+8           let x = 42
+(gdb) step
+9           y = x
+</code></pre>
+<p>At this point the statement <code>let x = 42</code> has been executed but the statement
+<code>y = x</code> has not, so <code>x</code> is initialized but <code>y</code> is not. Let's inspect both
+variables by <code>print</code>ing their addresses and values.</p>
+<pre><code>(gdb) print x
+$1 = 42
+(gdb) print &amp;x
+$2 = (i32 *) 0x2000fff8
+(gdb) print y
+$3 = 0
+(gdb) print &amp;y
+$4 = (i32 *) 0x2000fffc
+</code></pre>
+<p>A few things to note:</p>
+<ul>
+<li>
+<p>Both <code>x</code> and <code>y</code> live in the &quot;stack&quot;. That's why they have contiguous
+addresses.</p>
+</li>
+<li>
+<p><code>y</code>, which was declared before <code>x</code>, has a larger address than <code>x</code>. The reason
+is that the stack grows downwards (toward smaller addresses). If you keep
+creating stack variables, you'll see their addresses get smaller and smaller.</p>
+</li>
+<li>
+<p><code>y</code> which is currently uninitialized holds the value <code>0</code> -- this is a QEMU
+simplification. On real hardware you will observe that uninitialized variables
+hold random values. Of course, (safe) Rust won't actually let you <em>use</em>
+uninitialized variables but you can peek at them using <code>gdb</code>.</p>
+</li>
+</ul>
+<p>Back to the debugger. If you step again, you should see that <code>y</code> is now
+initialized:</p>
+<pre><code>(gdb) step
+11          loop {}
+(gdb) print y
+$5 = 42
+</code></pre>
+<p>The emulator is about to execute an endless loop. If you call <code>step</code> again,
+<code>gdb</code> will get stuck in the loop and hang. Instead, call <code>stepi</code> to advance <em>one
+instruction</em> rather than one statement.</p>
+<pre><code>(gdb) stepi
+0x00000014      10          loop {}
+(gdb) stepi
+0x00000014      10          loop {}
+</code></pre>
+<p>Congrats, you are now stuck in an endless loop!</p>
+<p>There is not much left to do in this emulation. But, before you terminate the
+<code>gdb</code> session and exit the emulator ...</p>
+<h2>Homework</h2>
+<p><code>gdb</code> has an <a href="http://www.delorie.com/gnu/docs/gdb/gdb_56.html">&quot;examine&quot;</a> command that let's you inspect the contents of memory
+at a certain address. Try the following command:</p>
+<pre><code>(gdb) x/4x main
+</code></pre>
+<p>Compare the output of that command with the output of the command:
+<code>arm-none-eabi-objdump -Cd target/thumbv7m-none-eabi/debug/app</code>. Are the outputs
+related somehow? Elaborate.</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./first/build.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./details.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./first/build.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./details.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

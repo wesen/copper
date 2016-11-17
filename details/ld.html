@@ -1,0 +1,399 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="../">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html" class="active"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Linker script</h1>
+<p>As we saw in the previous section, our program must comply with a specific
+memory layout for the microcontroller to work properly (otherwise it won't
+boot!).</p>
+<p>The linker is what ultimately determines the memory layout of our program. To
+some extent, we can control the linker, and therefore the memory layout of our
+program, using a file called linker script.</p>
+<p>For our first program, I gave you the linker script <code>layout.ld</code>. In this
+section, I'll explain its contents.</p>
+<h2>Terminology</h2>
+<p>First, let's define some terms you'll often hear when dealing with linker
+scripts.</p>
+<h3>Linking</h3>
+<p>The process of producing a binary from a Rust source code involves two steps (or
+several more if you peek inside <code>rustc</code>'s pipeline): compiling and linking.
+Compiling is the action of producing an intermediate file known as &quot;object file&quot;
+from the source code. In Rust, the minimal compilation unit is the crate which
+can be a single <code>.rs</code> or a collection of them. Each crate gets compiled to an
+object file (actually, dependencies get compiled to <code>.rlib</code>s which are a object
+files plus some &quot;metadata&quot;). To produce the final binary/executable, the
+compiled crates get &quot;merged&quot; together; this process is known as linking.</p>
+<h3>Symbol</h3>
+<p>A symbol is either a function or a static variable. Each symbol has a name, a
+start address and occupies some space memory. For example, our program entry
+point is a symbol with name <code>_reset</code> and address <code>0x8</code> and occupies 14 bytes (7
+16-bit instructions) in memory.</p>
+<h3>Section</h3>
+<p>A section is a collection of symbols stored in contiguous memory. Other way to
+think about this is that symbols are <em>organized</em> in sections.</p>
+<h3>Region</h3>
+<p>A (memory) region is a span of memory that's described using a start address and
+a length (in bytes). For example, the LM3S6965 has two memory regions: Its flash
+memory region which starts at address <code>0x0</code> and has a size of 256 KiB, and its
+RAM region which starts at address <code>0x2000_0000</code> and has a size of 64 KiB.</p>
+<h3>Object files</h3>
+<p>The linker takes as input one or more object files and outputs a single object
+file. In this book, we'll be exclusively working with object files in the ELF
+format. ELF also happens to be the format Linux executables use, but there exist
+other formats like Mach-O (macOS) and COFF (Windows).</p>
+<h2><code>layout.ld</code></h2>
+<p>Instead of explaining the linker script syntax (which is documented
+<a href="https://sourceware.org/binutils/docs/ld/Scripts.html">elsewhere</a>), I'm going to focus on explaining the contents of the <code>layout.ld</code>
+file and how this file relates to the boot process we covered in the previous
+section.</p>
+<p>For convenience, here's the full linker script.</p>
+<pre><code>ENTRY(_reset);
+
+MEMORY
+{
+  FLASH : ORIGIN = 0x00000000, LENGTH = 256K
+  RAM   : ORIGIN = 0x20000000, LENGTH = 64K
+}
+
+SECTIONS
+{
+  .text :
+  {
+    /* Vector table */
+    LONG(ORIGIN(RAM) + LENGTH(RAM))
+    LONG(_reset + 1);
+
+    /* Reset handler */
+    _reset = .;
+    *(.text._reset)
+
+    *(.text*)
+  } &gt; FLASH
+
+  /DISCARD/ :
+  {
+    *(.ARM.exidx*)
+    *(.note.gnu.build-id*)
+  }
+}
+</code></pre>
+<p>Let's go over it block by block</p>
+<h3>ENTRY</h3>
+<p><code>ENTRY(_reset)</code>. This indicates that the <code>_reset</code> symbol is our program entry
+point. Getting the entry point right is important because the linker will remove
+any symbol that is not referenced by the entry point because it's &quot;dead code&quot;.
+If you get it wrong, then the compiler may remove all the symbols and produce an
+empty executable.</p>
+<p>Because <code>_reset</code> is the name of entry point, our Rust program must somehow
+expose a symbol with that exact name. That's why we used the <code>export_name</code>
+attribute in our program:</p>
+<pre><code>#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! { .. }
+</code></pre>
+<p>Note that the function has type <code>extern &quot;C&quot; fn</code>. This forces the compiler to
+lower this function to a subroutine that adheres to the C ABI. We use the C ABI
+rather than Rust's ABI here because Rust's ABI is not stable and because the
+Cortex-M processor expects the subroutine to use the C ABI.</p>
+<p>Also, mind you that getting the name right is not sufficient for this to work.
+The symbol must also be a &quot;global&quot; symbol. This &quot;global&quot; requirement is
+fulfilled by making <code>main</code> public.</p>
+<p><code>nm</code> is a useful tool to debug problems about symbol names and visibility. Let's
+give it a try to verify that our program generates a global symbol named
+<code>_reset</code>. First, you'll have to generate an object file from your crate.</p>
+<pre><code>$ xargo rustc --target thumbv7m-none-eabi -- --emit=obj
+</code></pre>
+<p>The reason we want an object file is that we want to look at the symbols <code>rustc</code>
+generates from our program <em>before</em> the linker gets a chance to drop them.</p>
+<p>The object file will be named <code>app.o</code> and will sit in the
+<code>target/thumbv7m-none-eabi/debug</code> directory right next to the <code>app</code> executable.</p>
+<p>Next, we call <code>nm</code> to inspect the symbols and their visibility:</p>
+<pre><code>$ arm-none-eabi-nm --demangle target/thumbv7m-none-eabi/debug/app.o
+
+# or its shorter form
+$ arm-none-eabi-nm -C target/thumbv7m-none-eabi/debug/app.o
+(..)
+         U __aeabi_unwind_cpp_pr0
+00000000 T _reset
+00000000 T rust_begin_unwind
+00000000 N __rustc_debug_gdb_scripts_section__
+</code></pre>
+<p>In the output, you can see the <code>_reset</code> symbol and an uppercase <code>T</code> right next
+to it. This <code>T</code> indicates that <code>_reset</code> is a global symbol that resides in the
+<code>text</code> section (it's part of the program code). (See the <a href="https://sourceware.org/binutils/docs/binutils/nm.html">nm manual</a> for more
+details)</p>
+<p>As homework, try changing the <code>main</code> function a little: remove the <code>export_name</code>
+attribute and/or the <code>pub</code> modifier. How does the <code>nm</code> output changes? Also
+check how the <code>app</code> executable changes using <code>objdump</code>.</p>
+<h3>MEMORY</h3>
+<pre><code>MEMORY
+{
+  FLASH : ORIGIN = 0x00000000, LENGTH = 256K
+  RAM  : ORIGIN = 0x20000000, LENGTH = 64K
+}
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> In linker scripts, <code>K</code> means <code>1024</code> (not <code>1000</code>!) , <code>M</code> means
+<code>1048576</code> (i.e. <code>1024 * 1024</code>) and so on.</p>
+</blockquote>
+<p>The <code>MEMORY</code> block declares two memory regions: one named FLASH and the other
+named RAM. These regions represent the flash memory and RAM regions of the
+LM3S6965. The values here match the memory specification I gave you in the
+<a href="details/ld.html#Region">previous section</a>.</p>
+<h3>SECTIONS</h3>
+<pre><code>SECTIONS
+{
+  /* .. */
+}
+</code></pre>
+<p>The <code>SECTIONS</code> block declares sections and assigns each section to a memory
+region. It's important to assign each and every section to a memory region,
+otherwise you'll get weird &quot;overlap&quot; linker errors.</p>
+<h4>.text</h4>
+<p>The .text section goes into the Flash region which starts at address <code>0x0</code>. And,
+if you remember, the vector table goes in address <code>0x0</code>. So, we must place the
+vector table at the beginning of the .text section.</p>
+<pre><code>  .text :
+  {
+    /* Vector table */
+    LONG(ORIGIN(RAM) + LENGTH(RAM))
+    LONG(_reset + 1);
+</code></pre>
+<p>From the vector table, we only use its first two elements at this time:</p>
+<ul>
+<li>
+<p>The initial value of the stack pointer. As we mentioned before this is usually
+set to the largest valid RAM address and that would be <code>0x2001_0000</code> for the
+LSM303DLHC. Instead of hard coding that value, we can compute it from the
+<code>RAM</code> region we declared before and that's what the <code>LONG(ORIGIN(RAM) + LENGTH(RAM))</code> line does.</p>
+</li>
+<li>
+<p>The reset vector. This is the address of the reset handler, <code>_reset</code>. We add
+1 because the processor is in Thumb mode. (<a href="first/build.html#Entry%20point">remember?</a>)</p>
+</li>
+</ul>
+<p>Right after the vector table we place the reset handler, the actual function
+with its instructions.</p>
+<pre><code>    /* Reset handler */
+    _reset = .;
+    *(.text._reset)
+</code></pre>
+<p>We do that with the <code>*(.text._reset)</code> part. Which basically means place <em>all</em>
+(<code>*()</code>) the symbols, i.e. from all the input object files, named <code>_reset</code> here
+(but there can only be one symbol with that exact name).</p>
+<p>Then we have this <code>_reset = .</code> line before the <code>*(.text._reset)</code> bit. That
+assigns the address of the <code>_reset</code> symbol to the <code>_reset</code> variable. And we used
+that <code>_reset</code> variable in the vector table part (the <code>LONG(_reset + 1)</code> line).</p>
+<p>We also place the other text symbols (functions and constants) from all the
+input object files in this section:</p>
+<pre><code>    *(.text*)
+</code></pre>
+<p>Finally, we indicate to the linker that this <code>.text</code> section goes in the <code>FLASH</code>
+memory region.</p>
+<pre><code>  } &gt; FLASH
+</code></pre>
+<h4>/DISCARD/</h4>
+<pre><code>  /DISCARD/ :
+  {
+    *(.ARM.exidx*)
+    *(.note.gnu.build-id*)
+  }
+</code></pre>
+<p><code>/DISCARD/</code> is not a real section. Everything in this &quot;special section&quot; gets
+discarded by the linker and doesn't make it to the output object. So, why are we
+discarding these specific symbols?</p>
+<ul>
+<li>
+<p><code>.ARM.exidx*</code> These symbols are related to unwinding. Which we aren't using!
+If we leave these symbols in, they'll in turn demand other symbols related to
+unwinding and cause &quot;undefined reference&quot; linker errors.</p>
+</li>
+<li>
+<p><code>note.gnu.build-id*</code>. These symbols are introduced by <code>gcc</code>, which is the
+linker we are using. If not removed, these symbols will try to place
+themselves at address <code>0x0</code> causing &quot;overlap&quot; linker errors.</p>
+</li>
+</ul>
+<h2>Inspect again</h2>
+<p>Let's look again at the <code>objdump</code> output from section <a href="./first/build.html">3.1</a>. We should now be
+able to understand it better:</p>
+<pre><code>$ arm-none-eabi-objdump -Cd target/thumbv7m-none-eabi/debug/app
+
+target/thumbv7m-none-eabi/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+   4:   00000009        .word   0x00000009
+
+00000008 &lt;_reset&gt;:
+   8:   b083            sub     sp, #12
+   a:   e7ff            b.n     c &lt;_reset+0x4&gt;
+   c:   202a            movs    r0, #42 ; 0x2a
+   e:   9001            str     r0, [sp, #4]
+  10:   9002            str     r0, [sp, #8]
+  12:   e7ff            b.n     14 &lt;_reset+0xc&gt;
+  14:   e7fe            b.n     14 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Let's go over it part by part but in reverse!</p>
+<pre><code>00000008 &lt;_reset&gt;:
+   8:   b082        sub sp, #8
+   a:   202a        movs    r0, #42 ; 0x2a
+   c:   9001        str r0, [sp, #4]
+   e:   9000        str r0, [sp, #0]
+  10:   e7ff        b.n 12 &lt;start+0xa&gt;
+  12:   e7fe        b.n 12 &lt;start+0xa&gt;
+</code></pre>
+<p><code>_reset</code> is the reset handler and our program entry point. This is first thing
+the microcontroller will execute when it boots. Note the address <code>0x8</code>, this
+function is in the Flash memory region.</p>
+<p>Then we have:</p>
+<pre><code>00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+   4:   00000009        .word   0x00000009
+</code></pre>
+<p>These two &quot;words&quot; are the vector table which resides at address <code>0x0</code>. Even
+though the vector table is in the <code>.text</code> section, the vector table is not
+composed of instructions but of data.</p>
+<pre><code>00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+</code></pre>
+<p>The first element of the vector table is an &quot;anonymous&quot; symbol (though the
+linker automatically generates a name for it, based on the names of nearby
+symbols) with value <code>0x2001_0000</code>. <code>0x2001_0000</code> is the highest valid RAM
+address of the LM3S6965. Which we are going to use as the initial value of the
+stack pointer. This address is where the call stack will be created.</p>
+<pre><code>   4:   00000009        .word   0x00000009
+</code></pre>
+<p>The second element of the vector table is the reset &quot;vector&quot;, which is nothing
+more than a pointer to the reset handler, <code>_reset</code>. Even though the reset
+handler lives in address <code>0x8</code>, this symbol has value <code>0x9</code> to indicate that the
+reset handler must be called in thumb mode.</p>
+<h2>Closing comment</h2>
+<p>You don't need to commit all this to memory right now -- I know it's a lot to
+take in. But, yes, linker scripts are important and we'll be dealing with them
+again in the future. At that time, feel free to refer back to this section as a
+reference. For now, the take home message is:</p>
+<ul>
+<li>
+<p>When programming against hardware, your program must follow a device-specific
+memory layout.</p>
+</li>
+<li>
+<p>You can use a linker script to adjust your program memory layout to meet those
+requirements.</p>
+</li>
+</ul>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./details/boot.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./first/flash.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./details/boot.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./first/flash.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

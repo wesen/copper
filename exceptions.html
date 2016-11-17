@@ -1,0 +1,360 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html" class="active"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Exceptions: Crashing your micro</h1>
+<p>In the previous chapter we wrote a very simple program, built a binary from it,
+verified that said binary was well-formed (i.e. that it had a vector table where
+expected), and even executed it under an emulator and also on real hardware.
+Everything went smoothly! However, when developing things are bound to go awry
+at some point. In the worst case scenario, one might, by mistake, ask the
+microcontroller to perform an operation that it can't handle, like:</p>
+<ul>
+<li>
+<p>Reading/writing to a invalid memory address e.g. beyond the limits of the RAM
+region.</p>
+</li>
+<li>
+<p>Writing to flash memory using simple assignments (<code>*ptr = value</code>). Flash
+memory has an elaborate write mechanism.</p>
+</li>
+<li>
+<p>Executing an instruction that the microcontroller doesn't support. Like trying
+to execute a floating point instruction (e.g. <code>vadd.f32</code>) on a device without
+a FPU.</p>
+</li>
+</ul>
+<p>Under these situations, the processor will raise a <em>hardware exception</em>. When an
+exception is raised, the normal flow of our program is <em>interrupted</em> (stopped)
+and the processor jumps to an exception <em>handler</em> (recall: handler is just
+another name for function).</p>
+<p>There are several types of exceptions but most of them signify a catastrophic
+failure and, in real applications, are usually handled by resetting the system
+(if bare metal) or by resetting/killing the faulty process (if running on top of
+an OS). These catastrophic exceptions should happen rarely though (if ever)
+during the execution of a program; hence the name &quot;exception&quot;.</p>
+<p>As we are just starting out and we are going to be running our programs under
+the debugger, we'll handle all the exceptions the same way: we'll halt the
+processor and yield control back to the debugger using the <code>bkpt</code> instruction.</p>
+<blockquote>
+<p><strong>NOTE</strong> Executing the <code>bkpt</code> instruction when there is no debugger attached
+to the processor will make the processor raise an exception!</p>
+</blockquote>
+<h2>Installing the exception handlers</h2>
+<p>As the official ARM <a href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0553a/BABIFJFG.html">documentation</a> states, the exception vectors (recall: a
+vector is a pointer to a handler, i.e. a function pointer) must be stored in the
+vector table just right after the reset vector. We'll extend our linker script,
+<code>layout.ld</code>, to account for this:</p>
+<pre><code class="language-diff">     /* Vector table */
+     LONG(ORIGIN(RAM) + LENGTH(RAM))
+     LONG(_reset + 1);
++    KEEP(*(.rodata._EXCEPTIONS));
+
+     /* Reset handler */
+     _reset = .;
+</code></pre>
+<p>The change is quite literal: &quot;Place the exceptions (the <code>_EXCEPTIONS</code> symbol)
+right after the address of the reset handler (<code>LONG(_reset + 1)</code>)&quot;.</p>
+<p>Note that this time we use <code>.rodata._EXCEPTIONS</code> rather than
+<code>.text._EXCEPTIONS</code>. The reason is that the <code>_EXCEPTIONS</code> symbol is &quot;data&quot; and
+not a function.</p>
+<p>Now, we need create this <code>_EXCEPTIONS</code> symbol in our program:</p>
+<pre><code class="language-rust">// Add this to `src/main.rs`
+
+#![feature(asm)]
+
+mod exception {
+    pub extern &quot;C&quot; fn handler() {
+        unsafe {
+            asm!(&quot;bkpt&quot;);
+        }
+
+        loop {}
+    }
+
+    #[export_name = &quot;_EXCEPTIONS&quot;]
+    pub static EXCEPTIONS: [Option&lt;extern &quot;C&quot; fn()&gt;; 14] = [Some(handler), // NMI
+                                                            Some(handler), // Hard fault
+                                                            Some(handler), // Memmanage fault
+                                                            Some(handler), // Bus fault
+                                                            Some(handler), // Usage fault
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            Some(handler), // SVCall
+                                                            None, // Reserved for Debug
+                                                            None, // Reserved
+                                                            Some(handler), // PendSV
+                                                            Some(handler)]; // Systick
+}
+</code></pre>
+<p>Let's go over each section added to our program:</p>
+<pre><code class="language-rust">mod exception {
+    pub extern &quot;C&quot; fn handler() {
+        unsafe {
+            asm!(&quot;bkpt&quot;);
+        }
+
+        loop {}
+    }
+
+    ..
+}
+</code></pre>
+<p><code>exception::handler</code> is the handler (function) that we'll use to handle all the
+exceptions. This handler uses the <code>bkpt</code> instruction to trigger a manual
+breakpoint and then loops endlessly. We avoid returning from this function
+because whatever triggered the exception may have corrupted the stack so it may
+not be safe to continue executing the program.</p>
+<pre><code class="language-rust">mod exception {
+    ..
+
+    #[export_name = &quot;_EXCEPTIONS&quot;]
+    pub static EXCEPTIONS: [Option&lt;extern &quot;C&quot; fn()&gt;; 14] = [Some(handler), // NMI
+                                                            Some(handler), // Hard fault
+                                                            Some(handler), // Memmanage fault
+                                                            Some(handler), // Bus fault
+                                                            Some(handler), // Usage fault
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            Some(handler), // SVCall
+                                                            None, // Reserved for Debug
+                                                            None, // Reserved
+                                                            Some(handler), // PendSV
+                                                            Some(handler)]; // Systick
+}
+</code></pre>
+<p>On the second part, we create the <em>global</em> <code>_EXCEPTIONS</code> symbol backed by a
+static <code>EXCEPTIONS</code> variable. The <a href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0553a/BABIFJFG.html">documentation</a> states that there are 14
+exception &quot;slots&quot; right after the reset handler so we'll place a 14-element
+array of function pointers in the <code>EXCEPTIONS</code> variable. Some of the exception
+slots, the ones marked as &quot;Reserved&quot; in the docs, will never be used at runtime;
+we'll leave those uninitialized (i.e. zeroed). In Rust, function pointers <code>fn()</code>
+are non-nullable. To get nullable function pointers we must wrap the <code>fn()</code>s in
+an <code>Option</code>, then the <code>None</code> variant becomes the equivalent of the null pointer.</p>
+<h2>Build and inspect</h2>
+<p>It's always a good idea to inspect the output binary to check that everything
+looks as expected:</p>
+<pre><code>$ xargo build --target $TARGET
+
+$ arm-none-eabi-objdump -CD target/$TARGET/debug/app
+
+./target/$TARGET/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+08000000 &lt;_EXCEPTIONS-0x8&gt;:
+ 8000000:       2000a000        .word   0x2000a000
+ 8000004:       08000041        .word   0x08000041
+
+08000008 &lt;_EXCEPTIONS&gt;:
+ 8000008:       08000053 08000053 08000053 08000053     S...S...S...S...
+ 8000018:       08000053 00000000 00000000 00000000     S...............
+ 8000028:       00000000 08000053 00000000 00000000     ....S...........
+ 8000038:       08000053 08000053                       S...S...
+
+08000040 &lt;_reset&gt;:
+ 8000040:       b084            sub     sp, #16
+ 8000042:       e7ff            b.n     8000044 &lt;_reset+0x4&gt;
+ 8000044:       2000            movs    r0, #0
+ 8000046:       6800            ldr     r0, [r0, #0]
+ 8000048:       9002            str     r0, [sp, #8]
+ 800004a:       6800            ldr     r0, [r0, #0]
+ 800004c:       9001            str     r0, [sp, #4]
+ 800004e:       e7ff            b.n     8000050 &lt;_reset+0x10&gt;
+ 8000050:       e7fe            b.n     8000050 &lt;_reset+0x10&gt;
+
+08000052 &lt;app::exception::handler::he7207b3009cf1097&gt;:
+ 8000052:       b083            sub     sp, #12
+ 8000054:       e7ff            b.n     8000056 &lt;app::exception::handler::he7207b3009cf1097+0x4&gt;
+ 8000056:       be00            bkpt    0x0000
+ 8000058:       e7ff            b.n     800005a &lt;app::exception::handler::he7207b3009cf1097+0x8&gt;
+ 800005a:       e7fe            b.n     800005a &lt;app::exception::handler::he7207b3009cf1097+0x8&gt;
+</code></pre>
+<p>The two most relevant things to note: The <code>exception::handler</code> is located at
+address <code>0x0800_0052</code>. And, <code>_EXCEPTIONS</code>, the part of the vector table where
+the exception handlers reside, is mainly filled with the thumb address of
+<code>exception::handler</code> i.e. <code>0x0800_0053</code>; which is what we wanted. You will also
+see a few <code>0x0</code>s inside <code>_EXCEPTIONS</code>. These are the reserved exceptions slots
+and they are basically zeroed/uninitialized chunks of memory.</p>
+<h2>Let's crash!</h2>
+<blockquote>
+<p><strong>NOTE</strong> This program won't work on QEMU. AFAICT, raising an exception on a
+emulated device is rather hard. For some reason (probably to simplify the
+implementation), actions that normally raise an exception on real hardware are
+allowed in QEMU. <em>shrugs</em></p>
+</blockquote>
+<p>Let's write a program that raises an exception to test the exception handler.
+Our program will attempt to read memory beyond the RAM region. Here is it:</p>
+<pre><code class="language-rust">#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    unsafe {
+        let sram_boundary = *(0x0000_0000 as *const u32);
+        let _crash = *(sram_boundary as *const u32);
+    }
+
+    loop {}
+}
+</code></pre>
+<p>Let' run the program under the debugger on real hardware.</p>
+<pre><code># On another terminal
+$ [sudo] openocd (..)
+</code></pre>
+<pre><code>$ arm-none-eabi-gdb target/cortex-m3/debug/app
+(gdb) target remote :3333
+
+(gdb) load
+
+(gdb) step
+9               let sram_boundary = *(0x0000_0000 as *const u32)
+
+(gdb) step
+10              let _crash = *(ram_boundary as *const u32)
+
+(gdb) print/x ram_boundary
+$1 = 0x2000a000
+
+(gdb) step
+app::exception::handler () at src/main.rs:19
+19                  asm!(&quot;bkpt&quot;)
+</code></pre>
+<p>Remember that the address <code>0x0000_0000</code> is the first element of the vector table
+and contains the highest RAM address. Dereferencing that address
+(<code>sram_boundary</code>) will load memory beyond the RAM region.</p>
+<p>Upon trying to read invalid memory, the processor raises <em>an</em> exception (we
+don't know <em>which</em> one) and then proceeds to execute the <code>exception::handler</code>.
+While executing the handler, the processor encounters the <code>bkpt</code> instruction,
+halts and yields control back to the debugger.</p>
+<p>We'll use this very simple exception handler to uncover programming mistakes
+while debugging. We'll revisit the exception handler in the future to make it
+tell us which exception was raised and which instruction (and line of code)
+generated the exception.</p>
+<h2>Homework</h2>
+<p>What do you think would have happened if we executed the last <code>main</code> function
+that reads memory beyond the RAM boundary <strong>if</strong> we didn't <em>install</em> the
+exception handlers, or IOW if we didn't add the <code>_EXCEPTIONS</code> symbol or the
+<code>EXCEPTIONS</code> variable to our program?</p>
+<blockquote>
+<p><strong>HINT</strong> Look at the disassembly (<code>objdump</code>) of such binary. Take note of the
+addresses. What does the vector table look like?</p>
+</blockquote>
+<blockquote>
+<p><strong>WARNING</strong> Don't actually run a program that raises a hardware exception but
+doesn't handle it!</p>
+</blockquote>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./first/flash.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./blink.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./first/flash.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./blink.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html" class="active"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Blinking an LED</h1>
+<p>(with too many hexadecimals)</p>
+<blockquote>
+<p><strong>HEADS UP</strong> Most of the links in this page are PDFs!</p>
+</blockquote>
+<p>So far we have only used the processor inside our microcontroller. The processor
+can only do math and logic, and, on its own, it can't interact with the external
+world: it can't drive a LED or a motor, read a sensor or communicate with other
+devices.</p>
+<p>To make our programs more useful (and fun!) we must learn to use <em>peripherals</em>.
+A peripheral is an extra piece of electronics that's built, alongside the
+processor, in the same microcontroller package. Peripherals give the processor
+the extra functionality it needs to interact with the external world.</p>
+<blockquote>
+<p>Awesome! What can I do with these peripherals?</p>
+</blockquote>
+<p>All sort of things! There are several different types of peripherals, each one
+provides a different functionality. Microcontrollers manufacturers call them by
+different names even if they provide the same functionality though. Here are
+some of the most common ones (using STM32 naming convention):</p>
+<ul>
+<li>
+<p><code>GPIO</code>. General Purpose Input/Output. Can be used to turn on/off external
+devices (e.g. a motor, a lamp, etc.) or to read the state of a &quot;switch&quot;
+(e.g. a two-state (ON/OFF) switch, a keyboard, etc.).</p>
+</li>
+<li>
+<p><code>ADC</code>. Analog-to-Digital Converter. Can be used to &quot;read&quot; analog sensors (e.g.
+a thermometer, a light (intensity) sensor, etc.) or signals (e.g. voltage
+level of a battery, electric current, etc.).</p>
+</li>
+<li>
+<p><code>TIM</code>. Timers. Can be used to perform periodic tasks (e.g. every 100 ms),
+measure lengths of time (e.g. for how long was this button pressed?) or
+generate periodic signals with variable <a href="https://en.wikipedia.org/wiki/Duty_cycle">duty cycle</a>
+(AKA <a href="https://en.wikipedia.org/wiki/Pulse-width_modulation">Pulse Width Modulation</a> (PWM)). PWM is mainly used to control how
+much power is supplied to an electric machine like a motor which, in turn,
+lets you indirectly control other parameters like speed and torque.</p>
+</li>
+</ul>
+<p>We'll explore these and several other peripherals in more detail in a <a href="peripherals.html">later
+chapter</a>.</p>
+<blockquote>
+<p>So, how do I use these peripherals?</p>
+</blockquote>
+<p>Thanks to some magic called <a href="https://en.wikipedia.org/wiki/Memory-mapped_I/O">memory mapped I/O</a>, to the processor,
+peripherals appear as memory regions (!). This means that, for example, by
+writing to some special memory address you can use the digital I/O peripheral to
+turn on/off a LED. Another example: By reading from some special memory address
+you can use the Analog to Digital Converter peripheral to &quot;read&quot; an analog
+sensor like a thermometer and get the current environment temperature as a
+digital/discrete value.</p>
+<p>A chunk of memory associated to a single peripheral is known as a &quot;register
+block&quot;.  As other types of memory, these regions are usually accessed in word
+sized chunks (32-bit on ARM). Each of these word sized chunks is referred to as
+a (hardware) register; though registers can also be half-word or byte sized.
+Each of these registers has a human-friendly name and an address associated to
+it.</p>
+<p>A concrete example: The STM32F303VCT6 microcontroller has a peripheral known as
+Reset and Clock Control (RCC). The register block associated with this
+peripheral starts at address <code>0x4002_10000</code>. This register block is comprised of
+several registers as seen on its <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=166&amp;zoom=auto,67,754">register map</a>. One of registers associated
+with this peripheral is the <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=148&amp;zoom=auto,67,447">&quot;AHB peripheral clock enable register&quot;</a>
+(AKA <code>APB2ENR</code>) which lives at address <code>0x4002_1014</code>. This particular register
+can be used to power on/off other peripherals.</p>
+<p>To get familiar with the use of peripherals, we'll write the microcontroller
+version of the &quot;hello world&quot; program: Blinking an LED.</p>
+<h2>The device-agnostic plan</h2>
+<p>This is an overview of what our program will do:</p>
+<ol>
+<li>Power on the digital output peripheral.</li>
+</ol>
+<p>To save energy, most of the peripherals in a microcontroller boot in a powered
+off state. We have to explicitly &quot;power on&quot; the peripherals we want to use.</p>
+<ol start="2">
+<li>Put the <em>pin</em> that's connected to the LED in <em>output mode</em>.</li>
+</ol>
+<p>A pin a metal contact that a microcontroller exposes and that can be
+electrically connected to another device. A pin can either be (configured) to be
+in input mode or in output mode, but it must be in output mode to be able to
+drive (i.e. supply current to) an external device. Most pins start in input mode
+right after the micro boots to avoid spuriously driving external devices.</p>
+<ol start="3">
+<li>Set the pin <em>high</em> or <em>low</em> to turn on the LED.</li>
+</ol>
+<p><em>Low</em> means outputting zero volts (0V) on the pin whereas <em>high</em> means
+outputting a non-zero voltage, usually the power supply voltage (3.3V on most
+Cortex-M micros), on the pin. Depending on how the LED is wired to the pin,
+setting the pin low/high should turn it off/on or the other way around.</p>
+<p>After we've confirmed that we can turn the LED on/off, we'll modify the program
+to toggle the state of the LED pin every few seconds.</p>
+<h2>The device-specific details</h2>
+<p>Now we must fill in the device-specific details to realize our plan. All the
+needed information will come from the microcontroller reference manual
+(<a href="http://www.st.com/resource/en/reference_manual/DM00043574.pdf">here's mine</a>) and the dev board user manual (<a href="http://www.st.com/resource/en/user_manual/dm00063382.pdf">here's mine</a>).</p>
+<h3>Which LED, which pin?</h3>
+<p>First, we must pick a LED on the dev board to work with. Your dev board very
+likely has at least one &quot;user LED&quot; that's connected to one of the
+microcontroller's pin (check its user manual). Don't confuse an &quot;user LED&quot; with
+the &quot;power LED&quot;. The latter is an indicator of whether the board is powered on
+or off and can't be controlled by the microcontroller.</p>
+<blockquote>
+<p><strong>TODO</strong> What do I do if my dev board doesn't have an &quot;user LED&quot;?</p>
+</blockquote>
+<p>The STM32F3DISCOVERY has <a href="http://www.st.com/content/ccc/resource/technical/document/user_manual/8a/56/97/63/8d/56/41/73/DM00063382.pdf/files/DM00063382.pdf/jcr:content/translations/en.DM00063382.pdf#page=18&amp;zoom=auto,67,521">eight user LEDs</a>. For this example, I'll be
+using the red one that's connected to the pin <em>PE9</em>. Because micros have many
+I/O pins, these pins are usually grouped in <em>ports</em>. A port is a collection of
+8, 16, or some other number of pins. Ports are usually identified with letters:
+A, B, etc. and the pins in it are usually identified with numbers: 0, 1, etc.
+Therefore, you can think of the the pin PE9 as the 10th (because numbering
+starts at 0) pin in the port E.</p>
+<h3>How to power on a peripheral?</h3>
+<p>Micros have a dedicated peripheral that's in charge of &quot;clocking&quot; other
+peripherals. Clocking in this context means powering on/off a peripheral. A
+peripheral that doesn't receive a clock signal is basically powered off -- it
+can't be used and it doesn't (actively) consume energy.</p>
+<p>On STM32 micros this peripheral is called <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/a2/2d/02/4b/78/57/41/a3/CD00246267.pdf/files/CD00246267.pdf/jcr:content/translations/en.CD00246267.pdf#page=69&amp;zoom=auto,67,755">RCC</a>. The family of <code>*ENR</code> registers
+in this peripheral control the clocking of other peripherals. In my case, I'm
+interested in the <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=148&amp;zoom=auto,67,447">AHBENR</a> register which contains a <code>IOPEEN</code> bit that controls
+the clocking of the E port.</p>
+<h3>How to put the pin in output mode?</h3>
+<p>In my case, I need to put the pin <code>PE9</code> in output mode. Some register in the
+<a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=228&amp;zoom=auto,67,755">GPIOE</a> peripheral should let me do that. After looking through the
+documentation, I found that the <code>MODER</code> register does that. In particular, the
+<a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=237&amp;zoom=auto,67,669">MODER</a> register contains the bitfield <code>MODER9</code> which control the &quot;mode&quot; (input
+or output) of the pin <code>PE9</code>. I'll use the following setting:</p>
+<ul>
+<li><code>MODER9 = 0b01</code> Puts the pin in general purpose push-pull output mode.</li>
+</ul>
+<h3>Driving the pin high and low</h3>
+<p>Again the register that I want must be in the <code>GPIOE</code> peripheral. In this case,
+it's the <code>BSRR</code> register. It can individually <em>set</em> or <em>reset</em> a pin. Here,
+<em>reset</em> means putting the pin low and <em>set</em> means driving the pin high.</p>
+<h2>Putting it all together</h2>
+<p>Here's a detailed specification of the program:</p>
+<ol>
+<li>
+<p>Turn on the GPIOC peripheral: Set the <code>IOPEEN</code> bit in the <code>RCC-&gt;AHBENR</code>
+register to <code>1</code>.</p>
+</li>
+<li>
+<p>Put the PE9 pin in output mode: Set the <code>MODER9</code> bitfield in the
+<code>GPIOE-&gt;MODER</code> register to <code>0b01</code>.</p>
+</li>
+<li>
+<p>Set the PE9 pin high: Set the <code>BS9</code> bit in the <code>GPIOE-&gt;BSRR</code> register to <code>1</code>.</p>
+</li>
+<li>
+<p>Set the PE9 pin low: Set the <code>BR9</code> bit in the <code>GPIOE-&gt;BSRR</code> register to <code>1</code>.</p>
+</li>
+</ol>
+<h2>The code</h2>
+<p>And here's the code. I'm omitting the <code>exception</code> and <code>lang_items</code> modules which
+haven't changed since <a href="./exceptions.html#Installing%20the%20exception%20handlers">our previous program</a>.</p>
+<pre><code class="language-rust">#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    power_on_gpioe();
+    put_pe9_in_output_mode();
+    set_pe9_high();
+    set_pe9_low();
+
+    loop {}
+}
+
+fn power_on_gpioe() {
+    /// Start address of the RCC register block
+    const RCC: u32 = 0x4002_1000;
+
+    /// Offset address of the AHBENR register
+    const RCC_AHBENR: u32 = 0x14;
+
+    /// IOPCEN bit mask
+    const RCC_AHBENR_IOPEEN: u32 = 1 &lt;&lt; 21;
+
+    unsafe {
+        // Pointer to the AHBENR register
+        let ahbenr = (RCC + RCC_AHBENR) as *mut u32;
+
+        // IOPECN = 1
+        *ahbenr |= RCC_AHBENR_IOPEEN;
+    }
+}
+
+/// Start address of the GPIOC register block
+const GPIOE: u32 = 0x4800_1000;
+
+/// Offset address of the BSRR register
+const GPIOE_BSRR: u32 = 0x18;
+
+fn put_pe9_in_output_mode() {
+    /// Offset address of the CRH register
+    const GPIOE_MODER: u32 = 0x0;
+
+    unsafe {
+        // Pointer to the MODER register
+        let moder = (GPIOE + GPIOE_MODER) as *mut u32;
+
+        // MODER9 = 0b01
+        *moder = (*moder &amp; !(0b11 &lt;&lt; 18)) | (0b01 &lt;&lt; 18)
+    }
+}
+
+fn set_pe9_high() {
+    unsafe {
+        // Pointer to the BSRR register
+        let bsrr = (GPIOE + GPIOE_BSRR) as *mut u32;
+
+        // BS9 = 1
+        *bsrr = 1 &lt;&lt; 9;
+    }
+}
+
+fn set_pe9_low() {
+    unsafe {
+        // Pointer to the BSRR register
+        let bsrr = (GPIOE + GPIOE_BSRR) as *mut u32;
+
+        // BR9 = 1
+        *bsrr = 1 &lt;&lt; (16 + 9);
+    }
+}
+</code></pre>
+<p>Quite unsightly, right? So many magic values. In a <a href="peripherals.html">later chapter</a>, we'll
+refactor this code to get rid of the magic values, the pointer arithmetic and
+the raw pointers. But this code will make do for now!</p>
+<h2>Test it</h2>
+<p>Time to test our code! Don't feel discouraged if your program crashes or doesn't
+work on the first try! I certainly get most of my embedded programs wrong when
+I'm just starting to write drivers and have to deal with all these magic values
+and/or have to jump back and forth between the microcontroller reference manual
+and my library/program.</p>
+<p>OK, here's how I'd debug this program:</p>
+<ol>
+<li>
+<p>Starting from the program entry point, <code>_step</code>, repeatedly <code>step</code> over the
+program until you hit the the &quot;set the pin high&quot; statement, in my case this
+is the <code>*bsrr = 1 &lt;&lt; 8</code>. If you didn't hit an exception, congratulations!
+Head to step 3, otherwise go to step 2.</p>
+</li>
+<li>
+<p>If you hit an exception, you should now know which statement triggered it.
+Reset your microcontroller with <code>monitor reset halt</code>, then step all the way
+until your reach the faulty statement but don't execute it!. At this point,
+inspect the address of the register that will be modified by the faulty
+statement. Is the address right/valid? If not, fix it then go to step 1.</p>
+</li>
+<li>
+<p>You should now be about to execute the instruction that sets the LED pin
+high. Step from here all the way to the endless <code>loop</code>. This should toggle
+the state of the LED at least once. If it doesn't, then quite a few things
+could have gone wrong ... See below:</p>
+</li>
+</ol>
+<ul>
+<li>
+<p>Wrong register address as seen in step 2.</p>
+</li>
+<li>
+<p><code>GPIO</code> has not been powered on or configured properly. You'll have to
+&quot;examine&quot; (<code>(gdb) x $ADDRESS</code>) all the related registers. If you didn't power
+on the <code>GPIO</code> peripheral, you'll see that trying to write to that peripheral
+registers has no effect.</p>
+</li>
+<li>
+<p>You are driving the wrong pin, i.e. one that's not connected to an LED.
+Confirm this against your dev board user manual.</p>
+</li>
+</ul>
+<h2>Adding a loop</h2>
+<p>Now that we know that we can toggle the state of the LED. Making the LED blink
+is relatively easy. We need to add a <code>delay</code> function and then move the LED
+toggling code inside a loop:</p>
+<pre><code class="language-rust">#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    power_on_gpioe();
+    put_pe9_in_output_mode();
+
+    let ticks = 100_000;
+    loop {
+        set_pe9_high();
+        delay(ticks);
+        set_pe9_low();
+        delay(ticks);
+    }
+}
+
+fn delay(n: u32) {
+    for _ in 0..n {}
+}
+</code></pre>
+<p>I have no way of telling you what value of <code>n</code> will give you e.g. a delay of 1
+second because that depends on the built-in internal clock of your
+microcontroller (mine is 8 MHz) and the actual instructions that <code>delay</code>
+compiles to in debug mode. However, using a value between <code>10_000</code> and <code>100_000</code>
+for <code>ticks</code> should make the LED blink at a visible rate.</p>
+<h2>Test it again</h2>
+<p>To test, simply flash the program and let it run from the debugger:</p>
+<pre><code>(gdb) continue
+</code></pre>
+<p>You should now see the LED blink at some rate. To make the LED blink faster make
+the value of <code>ticks</code> smaller. To do this, first manually break the program by
+pressing <code>Crtl-C</code> at <code>gdb</code>'s prompt, then use the following commands:</p>
+<pre><code># break somewhere inside the loop
+(gdb) break main.rs:13
+
+(gdb) continue
+Breakpoint 1, app::main () at (..)/src/main.rs:13
+13              set_pe9_high()
+
+# make ticks smaller
+(gdb) set ticks = 10000
+
+# clear breakpoint
+(gdb) clear main.rs:13
+
+(gdb) continue
+</code></pre>
+<p>The LED should now blink at a faster rate. You can repeat the experiment but
+setting <code>ticks</code> to a larger value.</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./exceptions.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./optimize.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./exceptions.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./optimize.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

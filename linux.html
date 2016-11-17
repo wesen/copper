@@ -1,0 +1,267 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html" class="active"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Linux</h1>
+<h2>Shortcut: Just use this docker image</h2>
+<p>It's based on Ubuntu 16.04 and comes with all the required dependencies:</p>
+<pre><code>$ docker run --privileged -it japaric/copper:2016-05-10
+# Or use a newer tag. See https://hub.docker.com/r/japaric/copper/tags
+</code></pre>
+<p>Alternatively, instead of using this docker image, you can ...</p>
+<h2>Install the tools on your system</h2>
+<p>On most Linux distributions, most of the required tools can be installed via the
+package manager. The actual command that you need to call will depend on your
+Linux distribution. But, here's the one for Ubuntu:</p>
+<pre><code>$ sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi openocd qemu-system-arm
+</code></pre>
+<p>To install Rust and Cargo, I recommend using <a href="https://www.rustup.rs/">rustup</a>:</p>
+<pre><code>$ curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=nightly
+</code></pre>
+<p>Or if you already have rustup installed, switch to the nightly channel with:</p>
+<pre><code>$ rustup default nightly
+</code></pre>
+<p>To install Xargo simply use:</p>
+<pre><code>$ cargo install xargo
+</code></pre>
+<p>Note that Xargo 0.2.0+ depends on the <code>rust-src</code> component, so install that as
+well:</p>
+<pre><code>$ rustup component add rust-src
+</code></pre>
+<h2>First OpenOCD connection</h2>
+<blockquote>
+<p><strong>TODO</strong> document STM32VLDISCOVERY quirk</p>
+</blockquote>
+<p>Even if using the Docker image, it's a good idea to test that OpenOCD works by
+establishing a connection between your host system (PC, laptop, etc.) and your
+dev board. First, you'll have to physically connect your dev board and your host
+system via an USB cable. Then, you'll have to use a command that looks like
+this:</p>
+<pre><code>$ sudo openocd -f board/$BOARD
+</code></pre>
+<p>if you are using a dev board that has a built-in debugger. Or one like this:</p>
+<pre><code>$ sudo openocd -f interface/$INTERFACE -f target/$TARGET
+</code></pre>
+<p>if you are using an external programmer/debugger. Then, you should get an output
+like this:</p>
+<pre><code>Open On-Chip Debugger 0.9.0 (2015-09-02-10:42)
+Licensed under GNU GPL v2
+For bug reports, read
+http://openocd.org/doc/doxygen/bugs.html
+Info : The selected transport took over low-level target control. The results might differ
+compared to plain JTAG/SWD
+adapter speed: 1000 kHz
+adapter_nsrst_delay: 100
+none separate
+srst_only separate srst_nogate srst_open_drain connect_deassert_srst
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v1 JTAG v11 API v2 SWIM v0 VID 0x0483 PID 0x3744
+Info : using stlink api v2
+Info : stm32f1x.cpu: hardware has 6 breakpoints, 4 watchpoints
+</code></pre>
+<blockquote>
+<p><strong>TODO</strong> add troubleshooting instructions for when the <code>openocd</code> command
+fails.</p>
+</blockquote>
+<p>The program will block with that output, but it's okay to exit it with <code>Ctrl-C</code>
+at this time.</p>
+<p>As for the actual values of <code>$BOARD</code>/<code>$INTERFACE</code>/<code>$TARGET</code> that you must use,
+the possible values are in <code>/usr/share/openocd/scripts</code> (might be a different
+directory in your Linux distribution):</p>
+<pre><code>$ tree /usr/share/openocd/scripts
+/usr/share/openocd/scripts
+├── (...)
+├── board
+│   ├── actux3.cfg
+│   ├── adapteva_parallella1.cfg
+│   └── (...)
+├── interface
+│   ├── altera-usb-blaster2.cfg
+│   ├── altera-usb-blaster.cfg
+│   └── (...)
+├── target
+│   ├── aduc702x.cfg
+│   ├── aducm360.cfg
+│   └── (...)
+└── (...)
+</code></pre>
+<p>Try something that resembles the name of your hardware. For example, for the
+STM32VLDISCOVERY I use:</p>
+<pre><code>$ sudo openocd -f board/stm32vldiscovery.cfg
+</code></pre>
+<p>And for the STM32F3DISCOVERY, I use:</p>
+<pre><code>$ sudo openocd -f interface/stlink-v2-1.cfg -f target/stm32f3x.cfg
+</code></pre>
+<h3>(Optional) OpenOCD without <code>sudo</code></h3>
+<blockquote>
+<p><strong>NOTE</strong> For those using the Docker image. You have to run these commands on
+the host system, <em>not</em> from within the container.</p>
+</blockquote>
+<p>The reason we have to use <code>sudo</code> in the <code>openocd</code> invocations is that we don't
+have sufficient permissions to use the USB device. This can be fixed using
+<code>udev</code> rules.</p>
+<p>First let's identify the USB device OpenOCD is using from the output of <code>sudo openocd</code>:</p>
+<pre><code>$ sudo openocd
+</code></pre>
+<pre><code>$ lsusb
+(...)
+Bus 003 Device 116: ID 0483:3744 STMicroelectronics STLINK Pseudo disk
+(...)
+</code></pre>
+<p>Device number 116 on the bus 3, let's check its permissions:</p>
+<pre><code>$ ls -l /dev/bus/usb/003/116
+crw-rw-r-- 1 root root 189, 371 May  9 15:39 /dev/bus/usb/003/116
+</code></pre>
+<p>Only <code>root</code> can read/write from/to it. We'll write an udev rule to change the
+permissions of this particular USB device. udev rules are stored in
+<code>/etc/udev/rules.d</code> as files, let's add a new one:</p>
+<pre><code>$ cat /etc/udev/rules.d/99-openocd.rules
+# STLINKv1
+ATTRS{idVendor}==&quot;0483&quot;, ATTRS{idProduct}==&quot;3744&quot;, GROUP=&quot;users&quot;
+</code></pre>
+<p>This udev rule changes the group of the USB device to <code>users</code>.</p>
+<blockquote>
+<p><strong>NOTE</strong> You <em>can</em> use a group different than <code>users</code>. <strong>But</strong>, if you are
+using a Docker container, it's very likely that the id of a different group
+won't match between the host system and the container -- in that case you
+still won't have enough permissions to use the USB device!.</p>
+</blockquote>
+<blockquote>
+<p><strong>NOTE</strong> For more details about the udev rules see <a href="http://linux.die.net/man/7/udev">man 7 udev</a></p>
+</blockquote>
+<p>You'll have to change 0483 and 3744 for the vendor and product id of <strong>your</strong>
+device respectively. You can get those values from <code>lsusb</code>:</p>
+<pre><code>$ lsusb | grep STLINK
+Bus 003 Device 116: ID 0483:3744 STMicroelectronics STLINK Pseudo disk
+                       ^^^^ ^^^^
+</code></pre>
+<p>This new rule won't come into effect until you reload all the rules with:</p>
+<pre><code>$ sudo udevadm control --reload-rules
+</code></pre>
+<p>Now, unplug and re-plug the device and you should see the updated permissions:</p>
+<pre><code>$ lsusb | grep STLINK
+Bus 003 Device 118: ID 0483:3744 STMicroelectronics STLINK Pseudo disk
+
+$ ls -l /dev/bus/usb/003/118
+crw-rw-r-- 1 root users 189, 373 May  9 16:00 /dev/bus/usb/003/118
+</code></pre>
+<p>You should now be able to use your <code>openocd</code> command without <code>sudo</code> <strong>if</strong> your
+user was already part of the <code>users</code> group. If your user wasn't in that group,
+you can add yourself to this group with this command:</p>
+<pre><code>$ sudo usermod -a -G users $(whoami)
+</code></pre>
+<p>You'll have to re-log for this last command to take effect.</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./tools.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./macos.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./tools.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./macos.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

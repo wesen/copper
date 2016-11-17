@@ -1,0 +1,350 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="../">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html" class="active"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Build &amp; inspect</h1>
+<p>Let's start by creating a new Cargo project:</p>
+<pre><code>$ cargo new --bin app &amp;&amp; cd $_
+</code></pre>
+<p>And then add these files to the project:</p>
+<ul>
+<li>
+<p><a href="./first/layout.ld">layout.ld</a> - a &quot;linker script&quot;</p>
+</li>
+<li>
+<p><a href="./first/config.toml">.cargo/config</a> - a project local Cargo configuration
+file</p>
+</li>
+<li>
+<p><a href="./first/main.rs">src/main.rs</a></p>
+</li>
+</ul>
+<p>I'll explain what the linker script and the Cargo configuration file are for in
+a later section. It's not important to know what it does <em>right now</em>.</p>
+<p>Your project directory should look like this:</p>
+<pre><code>$ tree .
+.
+├── .cargo
+│   └── config
+├── Cargo.toml
+├── layout.ld
+└── src
+    └── main.rs
+</code></pre>
+<p>For convenience, <code>src/main.rs</code> is replicated here:</p>
+<pre><code class="language-rust">#![feature(lang_items)]
+
+// We won't use the usual `main` function. We are going to use a different
+// &quot;entry point&quot;.
+#![no_main]
+
+// We won't use the standard library because it requires OS abstractions like
+// threads and files and those are not available on this platform.
+#![no_std]
+
+// Conceptually, this is our program &quot;entry point&quot;. It's the first thing the
+// microcontroller will execute when it (re)boots. This entry point must be a
+// `pub`lic function named `_reset` to be recognized as such because that's what
+// our linker script (`layout.ld`) states. Later, we'll say more about these
+// requirements.
+//
+// Also, returning from this function is undefined because there is nothing to
+// return to! To statically forbid returning from this function, we mark it as
+// &quot;divergent&quot;, hence the `fn() -&gt; !` signature.
+#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    // Our first program initializes some variables on the stack and does
+    // nothing more. Yay!
+    let y;
+    let x = 42;
+    y = x;
+
+    // We can't return from this function so we just spin endlessly here.
+    loop {}
+}
+
+// Finally, we need to define the panic_fmt &quot;lang item&quot;, which is just a
+// function. This specifies what the program should do when a `panic!` occurs.
+// Our program won't panic, so we can leave the function body empty for now.
+mod lang_items {
+    #[lang = &quot;panic_fmt&quot;]
+    extern &quot;C&quot; fn panic_fmt() {}
+}
+</code></pre>
+<p>If you have written a native Rust program before, this shouldn't look that
+different except that <code>main</code> has a different signature.</p>
+<p>Now you can build the Cargo project:</p>
+<pre><code>$ xargo build --target thumbv7m-none-eabi
+   Compiling core v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/libcore)
+   Compiling alloc v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/liballoc)
+    Finished release [optimized] target(s) in 19.56 secs
+   Compiling rustc_unicode v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/librustc_unicode)
+   Compiling collections v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/libcollections)
+    Finished release [optimized] target(s) in 5.67 secs
+    Finished release [optimized] target(s) in 0.0 secs
+   Compiling rand v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/librand)
+    Finished release [optimized] target(s) in 1.78 secs
+    Finished release [optimized] target(s) in 0.0 secs
+   Compiling app v0.1.0 (file://$PWD)
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> Do <strong>not</strong> build the project in release mode!</p>
+</blockquote>
+<blockquote>
+<p><strong>NOTE</strong> You may not see Xargo compile <code>core</code> and the other &quot;standard&quot; crates
+if the sysroot was already compiled.</p>
+</blockquote>
+<h2>Trust, but verify</h2>
+<p>The project appeared to build fine, but it's always a good idea to inspect the
+executable. We are going to look at three things:</p>
+<h3>Memory layout</h3>
+<p>First, you have to appreciate the fact that, during its execution, everything in
+a program resides in (physical) memory and has an associated memory address.
+Now, everything that's <em>statically allocated</em>, like functions and static
+variables, gets assigned an address at compile time. Whereas, everything else,
+like local/stack variables and &quot;heap&quot; allocated variables, gets assigned an
+address at runtime.</p>
+<p>We can observe the addresses of statically allocated stuff using <code>objdump</code>.
+Let's check our executable:</p>
+<pre><code># with
+$ arm-none-eabi-objdump --demangle --disassemble target/thumbv7m-none-eabi/debug/app
+
+# or its shorter form
+$ arm-none-eabi-objdump -Cd target/thumbv7m-none-eabi/debug/app
+
+target/thumbv7m-none-eabi/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+   4:   00000009        .word   0x00000009
+
+00000008 &lt;_reset&gt;:
+   8:   b083            sub     sp, #12
+   a:   e7ff            b.n     c &lt;_reset+0x4&gt;
+   c:   202a            movs    r0, #42 ; 0x2a
+   e:   9002            str     r0, [sp, #8]
+  10:   9001            str     r0, [sp, #4]
+  12:   e7ff            b.n     14 &lt;_reset+0xc&gt;
+  14:   e7fe            b.n     14 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Let me highlight the important bits of the output:</p>
+<pre><code>00000000
+   0:   20010000
+
+00000004
+   4:   00000009
+
+00000008 &lt;_reset&gt;:
+   8:                   sub     sp, #12
+   a:                   b.n     c &lt;_reset+0x4&gt;
+   c:                   movs    r0, #42 ; 0x2a
+   e:                   str     r0, [sp, #8]
+  10:                   str     r0, [sp, #4]
+  12:                   b.n     14 &lt;_reset+0xc&gt;
+  14:                   b.n     14 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Now let's read the output section by section:</p>
+<pre><code>00000000
+   0:   20010000
+</code></pre>
+<p>&quot;The memory at address <code>0x0</code> holds the (<code>u32</code>) value <code>0x2001_0000</code>&quot;. When the
+program starts its execution, that part of the memory will be already
+initialized to that value.</p>
+<pre><code>00000004
+   4:   00000009
+</code></pre>
+<p>Likewise, &quot;the memory at <code>0x4</code> holds the  (<code>u32</code>) value <code>0x9</code>&quot;.</p>
+<pre><code>00000008 &lt;start&gt;:
+   8:               sub sp, #8
+   a:               movs    r0, #42 ; 0x2a
+   c:               str r0, [sp, #4]
+   e:               str r0, [sp, #0]
+  10:               b.n 12 &lt;start+0xa&gt;
+  12:               b.n 12 &lt;start+0xa&gt;
+</code></pre>
+<p>Finally, &quot;the <code>start</code> function resides at address <code>0x8</code>&quot;. The lines, like
+<code>sub sp, #8</code>, below <code>&lt;start&gt;</code> are the instructions that make up the function.
+When the processor executes this function, it will execute each one of these
+instructions.</p>
+<p>But, why are these addresses/values important? During boot, the microcontroller
+reads the memory section at <code>0x0..0x8</code> and uses those  values to complete the
+boot process. In other words, the values in that memory section have an special
+meaning to the boot process. In a <a href="details/boot.html">later section</a>, we'll explain what those
+values mean and how they are used in the boot process. For now, it's okay to
+just confirm that the memory at <code>0x0..0x8</code> is initialized.</p>
+<h3>Program size</h3>
+<p>Microcontrollers are memory constrained devices. It's important to keep an eye
+on the size of our programs to make sure they don't exceed the memory capacity
+of our device. We'll use the <code>size</code> command to do that:</p>
+<pre><code>$ arm-none-eabi-size target/thumbv7m-none-eabi/debug/app
+   text    data     bss     dec     hex filename
+     22       0       0      22      16 target/thumbv7m-none-eabi/debug/app
+</code></pre>
+<p>The output mentions three different memory <em>sections</em>:</p>
+<ul>
+<li>The <code>text</code> section contains the &quot;program code&quot;, i.e. all the instructions that
+the processor will execute when the program is executed. Functions go in this
+section. This section also stores   constants like strings. <code>static CONSTANT: &amp;'static str = &quot;Hello, world!&quot;</code>is an example of a constant.</li>
+<li><code>data</code> holds static variables that have an initial value, for example <code>static mut X: i32 = 42</code>.</li>
+<li>On the contrary, <code>bss</code> holds &quot;uninitialized&quot; static variables. Because of C
+heritage, here &quot;uninitialized&quot; actually means <em>zeroed</em>. For example, <code>static mut ZEROS: [u8; 4] = [0; 4]</code> would go in this section.</li>
+</ul>
+<p><code>dec</code> is just the sum of these three sections and <code>hex</code> is the hexadecimal
+representation of <code>dec</code>.</p>
+<p>Our program size is just 22 bytes big! Microcontrollers usually have memory
+capacities in the order of a few KiB up to hundreds of KiB. In particular, the
+LM3S6965 microcontroller, which we are going to emulate, has 256KiB of (Flash)
+memory. So, no problem here; this program will fit in the device memory.</p>
+<blockquote>
+<p><strong>NOTE</strong> KiB = <a href="https://en.wikipedia.org/wiki/Kibibyte">Kibibyte</a> = 1024 bytes</p>
+</blockquote>
+<h3>Entry point</h3>
+<p>To work properly, tools like <code>gdb</code> and <code>qemu</code> need to be informed about the
+program entry point, which is where the program starts its execution.</p>
+<p>We can check our program entry point using the <code>readelf</code> command:</p>
+<pre><code>$ arm-none-eabi-readelf -h target/thumbv7m-none-eabi/debug/app
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x9 &lt;--
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          67236 (bytes into file)
+  Flags:                             0x5000200, Version5 EABI, soft-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         2
+  Size of section headers:           40 (bytes)
+  Number of section headers:         15
+  Section header string table index: 12
+</code></pre>
+<p>There you can see that <code>0x9</code> is the entry point address. From the previous
+<code>objdump</code> output, you know that <code>0x8</code> is the address of the <code>main</code> function
+which we want to be the entry point. At first, this looks wrong because the
+address is off by 1, but this is actually correct.</p>
+<p>Cortex M microcontrollers always operate in &quot;thumb&quot; mode (i.e. they use &quot;thumb&quot;
+instructions). To indicate this thumb state all function address have their
+first bit (position 0) set to 1. Because <code>0x8 | 0b1</code> is <code>0x9</code>, <code>0x9</code> is the
+address of <code>main</code> when called in thumb mode.</p>
+<p>This means that <code>main</code> have been correctly declared as the entry point.</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./first/prog.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./first/qemu.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./first/prog.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./first/qemu.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

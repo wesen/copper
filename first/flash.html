@@ -1,0 +1,361 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="../">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html" class="active"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Run it on real hardware</h1>
+<blockquote>
+<p><strong>TODO</strong> Document gotchas. Some dev boards may need to plug/unplug jumpers to
+enable the built-in &gt; programmer/debugger.</p>
+</blockquote>
+<p>It's time to test our program on real hardware! We'll use OpenOCD  to <em>flash</em>
+our program into the microcontroller and then hook <code>gdb</code> and OpenOCD to debug
+our program just like we did before.</p>
+<blockquote>
+<p>Wait, what's flashing?</p>
+</blockquote>
+<p><em>Flashing</em> means we are going to transfer our program from the host machine (PC,
+laptop, etc.) to the target device (the microcontroller). Once flashed, the
+micro will execute the flashed program every time it boots or resets.</p>
+<blockquote>
+<p><strong>ATTENTION!</strong> The flashing instructions here will overwrite the program
+that's currently stored in your microcontroller. Make sure that it's either
+something you are not gonna miss or that's something you can easily get a copy of.</p>
+</blockquote>
+<h2>Compile for a different target device</h2>
+<p>Unless you happen to have a real LM3S6965EVB board right next to you, the binary
+we produced in the previous section won't work for your device. To produce a
+valid binary for your device, you'll have to change the cross compilation target
+from the LM3S6965 to <em>your</em> device and then rebuild the program.</p>
+<p>For the rest of this section, I'll be using the <a href="http://www.st.com/en/evaluation-tools/stm32f3discovery.html">STM32F3DISCOVERY</a> as the target
+device.</p>
+<h3>Update the linker script</h3>
+<p>One of the things that you'll always have to do when changing the cross
+compilation target is to update the device-specific parts of the linker script.</p>
+<p>The STM32F3DISCOVERY contains a <a href="http://www.st.com/resource/en/datasheet/stm32f303vc.pdf">STM32F303VCT6</a> micro with 256 KiB of flash and
+40+8 (*) KiB of RAM. A peculiarity of STM32 devices is that their flash memory starts
+at address <code>0x0800_0000</code>.</p>
+<p>(*) RAM is split in two memory regions located at different addresses.</p>
+<p><em>My</em> linker script adjustments look like this (yours will probably look
+different):</p>
+<pre><code class="language-diff"> MEMORY
+ {
+-  FLASH : ORIGIN = 0x00000000, LENGTH = 256K
+-  RAM : ORIGIN = 0x20000000, LENGTH = 64K
++  CCRAM : ORIGIN = 0x10000000, LENGTH = 8K
++  FLASH : ORIGIN = 0x08000000, LENGTH = 256K
++  RAM : ORIGIN = 0x20000000, LENGTH = 40K
+ }
+</code></pre>
+<h3>Change the target specification</h3>
+<p>Depending on the micro in your dev board, you may also have to change the
+<code>rustc</code> target from <code>thumbv7m-none-eabi</code> to something else. In my case, the
+STM32F303VCT6 contains a Cortex-M4F processor with FPU so I need to switch to the
+<code>thumbv7em-none-eabihf</code> target.</p>
+<p>If you change the target, you'll also need to update the <code>.cargo/config</code> file to
+port the configuration to the new target:</p>
+<pre><code class="language-diff">-[target.thumbv7m-none-eabi]
++[target.thumbv7em-none-eabihf]
+ rustflags = [
+     &quot;-C&quot;, &quot;link-arg=-Tlayout.ld&quot;,
+     &quot;-C&quot;, &quot;link-arg=-nostartfiles&quot;,
+ ]
+</code></pre>
+<h2>Build &amp; inspect</h2>
+<p>Now that the changes have been committed, we can rebuild the program:</p>
+<pre><code>$ xargo build --target $TARGET
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> From now on, I'm going to use <code>$TARGET</code>, instead of e.g.
+<code>thumbv7em-none-eabihf</code>, as a placeholder for the cross compilation target to
+make sure you don't use the wrong target triple.</p>
+</blockquote>
+<!-- FIXME use build.rs to force a rebuild when the linker script has been -->
+<!-- modified -->
+<blockquote>
+<p><strong>HEADS UP</strong> Make sure that Cargo actually rebuilds the binary! Cargo doesn't
+trigger a rebuild when the linker script changes. So, if the only thing you
+changed was the linker script and not the <code>rustc</code> target, then you'll have to
+<code>cargo clean</code> first and then call <code>build</code>.</p>
+</blockquote>
+<p>As usual, it's a good idea to inspect the binary with <code>objdump</code> to verify that
+the vector table is where expected.</p>
+<pre><code>$ arm-none-eabi-objdump -Cd ./target/$TARGET/debug/app
+
+./target/$TARGET/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+08000000 &lt;_reset-0x8&gt;:
+ 8000000:       2000a000        .word   0x2000a000
+ 8000004:       08000009        .word   0x08000009
+
+08000008 &lt;_reset&gt;:
+ 8000008:       b083            sub     sp, #12
+ 800000a:       e7ff            b.n     800000c &lt;_reset+0x4&gt;
+ 800000c:       202a            movs    r0, #42 ; 0x2a
+ 800000e:       9001            str     r0, [sp, #4]
+ 8000010:       9002            str     r0, [sp, #8]
+ 8000012:       e7ff            b.n     8000014 &lt;_reset+0xc&gt;
+ 8000014:       e7fe            b.n     8000014 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Looks good! The vector table is at <code>0x0800_0000</code> as expected for my device.</p>
+<h2>Establishing an OpenOCD connection</h2>
+<p>Before we flash the program we have to &quot;open&quot; an OpenOCD connection between the
+device and the host machine. You should be already familiar with these steps
+from the <a href="linux.html#First%20OpenOCD%20connection">development environment</a> chapter:</p>
+<pre><code># Physically connect the dev board to the host machine (probably your laptop), then
+$ [sudo] openocd -f board/$BOARD
+(...)
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v2 JTAG v27 API v2 SWIM v15 VID 0x0483 PID 0x374B
+Info : using stlink api v2
+Info : Target voltage: 2.919073
+Info : stm32f3x.cpu: hardware has 6 breakpoints, 4 watchpoints
+</code></pre>
+<h2>Flash and debug</h2>
+<p>We'll use the <code>gdb</code> shell to both flash and debug the program. So, fire up
+<code>gdb</code>:</p>
+<blockquote>
+<p><strong>NOTE</strong> You can't use <code>lldb</code> this time <code>:-(</code>. AFAICT, there's no <code>lldb</code>
+equivalent to the <code>monitor</code> and <code>load</code> commands provided by <code>gdb</code>. And those
+commands are required in this section.</p>
+</blockquote>
+<pre><code>$ arm-none-eabi-gdb target/$TARGET/debug/app
+</code></pre>
+<p>Next, we need to connect <code>gdb</code> and OpenOCD. The command is the same as the one
+we used with QEMU:</p>
+<pre><code>(gdb) target remote :3333
+Remote debugging using :3333
+0x00000000 in ?? ()
+</code></pre>
+<p>You should also see extra output on the OpenOCD terminal but maybe not the exact
+same output shown here:</p>
+<pre><code class="language-diff"> Info : stm32f1x.cpu: hardware has 6 breakpoints, 4 watchpoints
++Info : accepting 'gdb' connection on tcp/3333
++Info : device id = 0x10036422
++Info : flash size = 256kbytes
+</code></pre>
+<p>Now that we are connected to the device via <code>gdb</code>. Let's flash the program using
+the <code>load</code> command:</p>
+<pre><code>(gdb) load
+Loading section .text, size 0x16 lma 0x8000000
+Start address 0x8000008, load size 20
+Transfer rate: 246 bytes/sec, 10 bytes/write.
+</code></pre>
+<p>You should also see new output on the OpenOCD terminal:</p>
+<pre><code class="language-diff"> Info : accepting 'gdb' connection on tcp/3333
+ Info : device id = 0x10036422
+ Info : flash size = 256kbytes
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++adapter speed: 950 kHz
++target state: halted
++target halted due to debug-request, current mode: Thread
++xPSR: 0x01000000 pc: 0x08000194 msp: 0x2000a000
++Info : Unable to match requested speed 8000 kHz, using 4000 kHz
++Info : Unable to match requested speed 8000 kHz, using 4000 kHz
++adapter speed: 4000 kHz
++target state: halted
++target halted due to breakpoint, current mode: Thread
++xPSR: 0x61000000 pc: 0x2000003a msp: 0x2000a000
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++adapter speed: 950 kHz
++target state: halted
++target halted due to debug-request, current mode: Thread
++xPSR: 0x01000000 pc: 0x08000194 msp: 0x2000a000
+</code></pre>
+<p>The program is now flashed and the device is halted at the program's entry
+point, i.e. the <code>main</code> function. Let's repeat the debug session we used for the
+previous QEMU run:</p>
+<pre><code>(gdb) step
+8           let x = 42
+
+(gdb) step
+9           y = x
+
+(gdb) print x
+$1 = 42
+
+(gdb) print &amp;x
+$2 = (i32 *) 0x20001ffc
+
+(gdb) print y
+$3 = -2052926870
+
+(gdb) print/x y
+$4 = 0x85a2d26a
+
+(gdb) print &amp;y
+$5 = (i32 *) 0x20001ff8
+
+(gdb) step
+11          loop {}
+
+(gdb) print y
+$5 = 42
+</code></pre>
+<p>Yay! This time the uninitialized value of <code>y</code> looks more random; I got
+<code>-2052926870</code> on this run.</p>
+<p>While you executed the above commands, you should have seen more output on the
+OpenOCD terminal. Each time you stepped over the program, OpenOCD printed the
+<em>program counter</em> which is the address of the instruction the processor will
+execute next.</p>
+<pre><code class="language-diff"> xPSR: 0x01000000 pc: 0x08000008 msp: 0x20002000
++Info : halted: PC: 0x0800000a
++Info : halted: PC: 0x0800000c
++Info : halted: PC: 0x0800000e
++Info : halted: PC: 0x08000010
+</code></pre>
+<p>Here's one more trick for you to try:</p>
+<pre><code>(gdb) monitor reset halt
+</code></pre>
+<p>This will generate the following OpenOCD output:</p>
+<pre><code> Info : halted: PC: 0x08000010
++target state: halted
++target halted due to debug-request, current mode: Thread
++xPSR: 0x01000000 pc: 0x08000008 msp: 0x20002000
+</code></pre>
+<p>This will reset your microcontroller (!) and halt your program at the reset
+handler, i.e. the <code>main</code> function.</p>
+<p>For fun, let's inspect the <code>y</code> variable <strong>before</strong> it's initialized:</p>
+<pre><code>(gdb) step
+8           let x = 42
+
+(gdb) step
+9           y = x
+
+(gdb) print x
+$6 = 42
+
+(gdb) print &amp;x
+$7 = (i32 *) 0x20001ffc
+
+(gdb) print y
+$8 = 42
+
+(gdb) print &amp;y
+$9 = (i32 *) 0x20001ff8
+</code></pre>
+<p>Surprise! <code>y</code> appears to have been already initialized! Except, that's not the
+case. What actually happened is that resetting the microcontroller doesn't touch
+RAM (i.e. it doesn't power it off). Therefore, the RAM still holds the data from
+the previous run and that's why <code>y</code> hold the value <code>42</code> it was assigned during
+the <em>previous</em> run of the program.</p>
+<p>That's all for this section! You can now close both OpenOCD and <code>gdb</code>. Let's
+move onto more complex programs!</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./details/ld.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./exceptions.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./details/ld.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./exceptions.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

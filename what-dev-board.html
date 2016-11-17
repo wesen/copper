@@ -1,0 +1,304 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html" class="active"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>What is a dev board?</h1>
+<p>Dev board is the short term for &quot;development board&quot;. When dealing with embedded
+systems it is typical to have an application specific PCB board which carries
+the processor you are going to write software for. However, sometimes you don't
+know what your hardware looks like at the start of a project, or maybe you want
+to be able to rapidly prototype by connecting different sensors and actuators to
+your processor without having to make a new PCB board every time. This is where
+dev boards come in, they are essentially the bare minimum you need (sometimes
+with some additional sensors for evaluation) to turn on the processor, program
+it, and connect things to it. If you are familiar with the <a href="https://www.arduino.cc/">Arduino</a> platform,
+that is a dev board.</p>
+<p>While you can use an emulator to follow along it is more fun, and more
+rewarding, to make command real hardware to do your bidding. So lets choose one!</p>
+<blockquote>
+<p><strong>TODO</strong> A picture would be useful here.</p>
+</blockquote>
+<h1>What dev board should I use/get?</h1>
+<p>I won't force you to use a specific dev board. This document has been written in
+a device-agnostic way so you can follow it with pretty much any dev board you
+want. Where a specific dev board is targeted it will be stated explicitly.</p>
+<p>Nonetheless, some dev boards are easier to work with than others. This section
+will provide you some advice on how to pick a dev board that will make your life
+easier.</p>
+<p>When we are choosing a dev board we are looking at the following parameters,
+which are outlined in more detail below:</p>
+<ul>
+<li>
+<p>Supports OpenOCD. Which is what we will use to load and debug compiled
+binaries of our Rust code.</p>
+</li>
+<li>
+<p>Has good documentation. You always will have the datasheet from the
+manufacturer, but good and easy to follow documentation on the boards pinout,
+how it relates to the processor and what other goodies you have is key.</p>
+</li>
+<li>
+<p>Community! Some dev boards have more of a following than others, while others
+will be using C/C++ the community can help with hardware related issues, or
+maybe even by providing example C code which can be helpful for getting
+started.</p>
+</li>
+</ul>
+<h2>OpenOCD support</h2>
+<p>We'll use OpenOCD to &quot;flash&quot; and debug the programs we'll develop. It's best if
+you can get a dev board with a built-in debugger that's supported by OpenOCD.
+You can see a list of such boards <a href="https://github.com/ntfreak/openocd/tree/master/tcl/board">here</a>.</p>
+<blockquote>
+<p><strong>NOTE</strong> Not all the dev boards listed in that link have an ARM Cortex-M
+microcontroller, some of them have Cortex-A processors, some have
+microcontrollers with a different architecture (e.g. AVR).</p>
+</blockquote>
+<p>One example of such dev board is the <a href="http://www.st.com/en/evaluation-tools/stm32f3discovery.html">STM32F3DISCOVERY</a> which I'm going to
+use throughout the examples of this document. It seems that most of
+the <a href="http://www.st.com/en/evaluation-tools/stm32-mcu-discovery-kits.html">other evaluation boards</a> by STM32 also have a built-in
+debugger and are supported by OpenOCD. I'm not familiar with other vendors like
+Atmel and NXP but they probably have similar offerings.</p>
+<p>Alternatively, you can use a board that doesn't have a built-in debugger if the
+microcontroller in it is supported by OpenOCD (check <a href="https://github.com/ntfreak/openocd/tree/master/tcl/target">this list</a>) and
+the board exposes a JTAG/SWD connector, but you'll also need an external
+debugger supported by OpenOCD (check <a href="https://github.com/ntfreak/openocd/tree/master/tcl/interface">this list</a>). This is more
+complicated as you'll have to read about the JTAG/SWD interface to make an
+informed decision and you'll also have to figure out how to wire up everything
+together.</p>
+<blockquote>
+<p><strong>NOTE</strong> The &quot;target list&quot; linked above not only contains Cortex-M
+microcontrollers but also devices with different architectures. Likewise, the
+&quot;interface list&quot; linked above not only lists JTAG/SWD interfaces.</p>
+</blockquote>
+<blockquote>
+<p><strong>TODO</strong> Add picture of what the connection looks like</p>
+</blockquote>
+<h2>Good documentation</h2>
+<p>The microcontroller in it should have documentation about:</p>
+<ul>
+<li>
+<p>The peripherals it provides: How they work and the registers associated with
+them. This document is known as the <em>Reference Manual</em> (<a href="http://www.st.com/resource/en/reference_manual/cd00246267.pdf">example</a>),
+although sometimes this information is contained in the <em>Data Sheet</em>
+(<a href="http://www.ti.com/lit/ds/symlink/lm3s6965.pdf">example</a>).</p>
+</li>
+<li>
+<p>Hardware bugs (yes, hardware can have bugs too!) or device limitations that
+may be present in the revision of the hardware that you own and how to work
+around them. This document is known as <em>Silicon Errata</em> or just <em>Errata Sheet</em>
+(<a href="http://www.st.com/resource/en/errata_sheet/cd00260217.pdf">example</a>).</p>
+</li>
+</ul>
+<h1>Dev boards that Rustaceans have used before</h1>
+<p>Or that we are sure work just fine.</p>
+<ul>
+<li><a href="http://www.st.com/en/evaluation-tools/stm32f3discovery.html">STM32F3DISCOVERY</a>
+<ul>
+<li>
+<p>Recommended if you are a beginner as we have beginner friendly documentation
+tailored for this specific board. Check the <a href="https://japaric.github.io/discovery">Discovery</a> book.</p>
+</li>
+<li>
+<p>There's a crate, <a href="https://crates.io/f3">f3</a>, that targets this board and provides a high
+level, easy to use API.</p>
+</li>
+<li>
+<p>Has an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Has OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>
+<p><a href="http://www.st.com/en/evaluation-tools/stm32-mcu-discovery-kits.html">Other DISCOVERY boards</a></p>
+<ul>
+<li>
+<p>Have an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Have OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="http://www.st.com/en/evaluation-tools/stm32-mcu-nucleo.html">Nucleo boards</a></p>
+<ul>
+<li>
+<p>Pretty much like the DISCOVERYs but in an Arduino-compatible form factor</p>
+</li>
+<li>
+<p>You can use Arduino shields with these boards</p>
+</li>
+<li>
+<p>Have an on-board programmer/debbuger</p>
+</li>
+<li>
+<p>Have OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="https://www.pjrc.com/teensy/">Teensy 3.x</a></p>
+<ul>
+<li>
+<p>High level crate, like f3, that targets this board: <a href="https://crates.io/crates/teensy3">teensy3</a></p>
+</li>
+<li>
+<p>Can flash programs with just a USB cable (has a USB bootloader)</p>
+</li>
+<li>
+<p>No debug support (GDB) AFAIK because the SWD pins are not exposed</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>
+<p><a href="http://www.ti.com/tool/ek-tm4c123gxl">Tiva-C Launchpad</a></p>
+<ul>
+<li>
+<p>Has an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Has OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="http://www.ti.com/tool/ek-lm4f120xl">Stellaris Launchpad</a></p>
+<ul>
+<li>
+<p>Has an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Has OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Arduino <a href="https://www.arduino.cc/en/Main/ArduinoBoardDue">Due</a> &amp; <a href="https://www.arduino.cc/en/Main/ArduinoBoardZero">Zero</a></p>
+<ul>
+<li>
+<p>Can flash programs with just a USB cable (has a USB bootloader)</p>
+</li>
+<li>
+<p>Debugging requires an external debugger (more hardware)</p>
+</li>
+</ul>
+</li>
+</ul>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./why-arm.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./tools.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./why-arm.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./tools.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

@@ -1,0 +1,2633 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Introduction</h1>
+<blockquote>
+<p><strong>UPDATE (2016-11-15)</strong> I'm currently re-purposing this book to be more like a
+reference about low level details of Rust programs for Cortex-M micros. Thus
+it's in a state of flux right now. If you are looking for a more beginner
+friendly text, check out the <a href="https://japaric.github.io/discovery">Discovery</a> book.</p>
+</blockquote>
+<blockquote>
+<p><strong>WARNING</strong> This is a work in progress! It's incomplete and some
+chapters/sections are still in draft phase.</p>
+</blockquote>
+<p>The goal of this book is to get you started in <em>microcontroller software
+development</em>. We'll mainly cover <em>bare metal programming</em> (programming directly
+<em>on</em> hardware, without OS abstractions/services) but I hope we'll tread into OS
+development territory (e.g. schedulers) in the latter chapters. We'll use the
+<a href="https://www.rust-lang.org/">Rust programming language</a> and ARM <a href="http://www.arm.com/products/processors/cortex-m/index.php?tab=Why+Cortex-M?">Cortex-M</a> microcontrollers as a means to
+that end.</p>
+<blockquote>
+<p><strong>TODO</strong> What are microcontrollers? micros vs general purpose computers. What
+are the differences between programming a micro and programming a general
+purpose computer? etc. -- In other words, I'm going to assume you already know
+<em>why</em> you want to learn to program microcontrollers in the first place. :-)</p>
+</blockquote>
+<p>(Hopefully) At the end of this book the reader will:</p>
+<ul>
+<li>
+<p>Be able to program any (ARM Cortex-M) microcontroller that's supported by the
+Rust compiler and is minimally/properly documented.</p>
+</li>
+<li>
+<p>Become familiar with the <em>peripherals</em> (functionality) commonly provided by
+microcontrollers: analog/digital I/O, communication protocols, timers, etc.</p>
+</li>
+<li>
+<p>Be able to write drivers for these peripherals and be able to compose them
+into applications.</p>
+</li>
+<li>
+<p>Know how to use existing (C) tooling to inspect, profile and debug the program
+they wrote.</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>DISCLAIMER</strong> I don't claim to be an authority on embedded software
+development and much less an authority on embedded software development *with
+Rust*. The abstractions, programming patterns and development methods I
+present here are probably <em>not</em> the best practices because we don't know yet
+what those look like in Rust! I hope this book will trigger more interest and
+discussion on this topic and <em>that</em> will hopefully lead to the development of
+best practices.</p>
+</blockquote>
+<h2>Contact</h2>
+<p>If you:</p>
+<ul>
+<li>
+<p>Would like to report any issue with this text: a typo, wrong/unclear information or
+missing/insufficient background information.</p>
+</li>
+<li>
+<p>Would like to see a chapter on some specific topic (but check <a href="unwritten.html">this list</a> first)</p>
+</li>
+<li>
+<p>Have any question about the topics covered here</p>
+</li>
+<li>
+<p>Would like to share an idea, suggestion or critic</p>
+</li>
+<li>
+<p>Just want to say hi, thanks or whatever is on your mind</p>
+</li>
+</ul>
+<p>Feel free to contact <a href="https://github.com/japaric">me</a> via e-mail, the <a href="https://github.com/japaric/copper/issues">issue tracker</a> or the #rust-embedded
+channel on Mozilla's IRC network.</p>
+<h2>Source</h2>
+<p>The source of this document is available in <a href="https://github.com/japaric/copper">this repository</a>. Pull requests
+fixing typos or improving the wording are welcome!</p>
+<h1>Audience</h1>
+<blockquote>
+<p>Who is this documentation aimed towards?</p>
+</blockquote>
+<p>This site is aimed at people that:</p>
+<ul>
+<li>Have a basic knowledge of Rust. If you haven't been introduced to Rust yet, you should check out
+the (Rust) <a href="https://doc.rust-lang.org/book/">&quot;book&quot;</a> and <a href="https://github.com/ctjhoa/rust-learning">these other great learning resources</a>.</li>
+</ul>
+<ul>
+<li>Have access, own, or are willing to buy an ARM Cortex-M development board.</li>
+</ul>
+<blockquote>
+<p><strong>NOTE</strong> You <em>can</em> follow this material <em>without</em> a dev board by using an emulator. But your
+learning experience (and enjoyment!) will likely suffer as you will only be able to execute a few
+of the programs that we'll develop here due to limitations in emulators (not all the
+microcontroller functionality is implemented).</p>
+</blockquote>
+<p>On the other hand, you <strong>don't</strong> need to know about any of these topics to follow this material:</p>
+<ul>
+<li>Assembly.</li>
+<li>Electronics.</li>
+<li>Microcontrollers.</li>
+<li>The ARM (Cortex-M) architecture.</li>
+<li>The C programming language.</li>
+</ul>
+<p>If you are already familiar with embedded development using C/C++, please tag along! I'm sure you'll
+find the information about tooling (Cargo instead of Make) and Rust abstractions (traits as
+interfaces) interesting. Plus, I'd love to hear your opinion about how non-Rust concepts (like the
+ARM boot process, linker scripts, etc) are explained.</p>
+<h1>Why Rust?</h1>
+<blockquote>
+<p>Why program in Rust and not in C?</p>
+</blockquote>
+<p>C is (probably) the most used programming language for development of embedded systems (citation
+needed). However I've decided to use Rust in this material for the following reasons:</p>
+<ul>
+<li>Rust gives you C-like low level control over aspects like memory management and struct layout /
+memory representation while not imposing a runtime and still providing high level features like
+closures, traits/generics, tagged unions, pattern matching and someday, I hope, (state-machine)
+<a href="https://github.com/rust-lang/rfcs/issues/1081#issuecomment-221396554">generators</a> (this <a href="https://dwrensha.github.io/capnproto-rust/2016/05/28/async-generators.html">blog post</a> fleshes out the idea a bit more).</li>
+</ul>
+<ul>
+<li>
+<p>The Rust distribution ships with a package manager, Cargo, that encourages splitting your
+programs in reusable crates (libraries) by greatly simplifying dependency management. Cargo also
+encourages not reinventing the wheel by providing access to a central repository where the Rust
+community publishes and shares their crates.</p>
+</li>
+<li>
+<p>Testing and documentation infrastructure are provided for, in part, by Cargo meaning you don't
+need to choose from many competing options, or reinvent the wheel</p>
+</li>
+<li>
+<p>One can use pretty much all of the existing C tooling on Rust programs. For example:</p>
+<ul>
+<li>You can use binary inspection tools like <code>objdump</code>, <code>nm</code>, <code>readelf</code>, <code>size</code>, etc.</li>
+<li>You can use <code>gdb</code>/<code>lldb</code> to debug your program. Things like step-by-step execution, breakpoints,
+watchpoints, printing variables, etc. Just Work.</li>
+<li>You can run your program under an emulator like QEMU.</li>
+</ul>
+</li>
+<li>
+<p>Some people find Rust more approachable and/or less scary than C. This means that they are more
+likely to explore this area of programming using Rust than using C.</p>
+</li>
+<li>
+<p>And, most importantly, I like Rust and its awesome community.</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>TODO</strong> Rust &amp; C++ comparison</p>
+</blockquote>
+<h2>Disadvantages of not using C</h2>
+<p>Or advantages of using C instead of Rust:</p>
+<ul>
+<li>
+<p>Device support. Some less known architectures, like the Xtensa, but with huge communities behind
+them, like the ESP8266 (google it!), are not supported by LLVM and therefore you can't build Rust
+programs for microcontrollers of that architecture.</p>
+</li>
+<li>
+<p>Commercial/IDE support. There are lots (compared to Rust) of commercial IDEs, SDKs, RTOSes for
+developing firmware in C.</p>
+</li>
+<li>
+<p>Toolchain Stability. The C toolchain is pretty stable and well vetted at this point for embedded
+development while Rust is still growing its embedded ecosystem.</p>
+</li>
+<li>
+<p>MISRA C and other standards for producing &quot;high-reliability&quot; code have not been created yet for
+Rust (but the opportunity is there)</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>TODO</strong> More advantages of using C. I haven't thought this through thoroughly.</p>
+</blockquote>
+<h1>Why the ARM Cortex-M?</h1>
+<blockquote>
+<p>Why not AVR or PIC or ...?</p>
+</blockquote>
+<p>ARM Cortex-M processors are very popular and are used across many industries. In a way they provide
+unprecedented performance in a variety of cores from the low power Cortex-M0 to the floating-point
+enabled Cortex-M4F. They are used in everything from your <a href="https://www.arm.com/markets/embedded/fitbit-one.php">Fitbit</a>, to your <a href="http://diydrones.com/profiles/blogs/vr-multipilot32f4-arm-cortex-m4-the-most-powerful-auto-pilot-in">Quadcopter</a>, and
+beyond to medical equipment, robotic arms, and automobiles. Also, ARM Cortex-M processors are
+developed by many companies, all using the standard core specified by ARM. This gives embedded
+systems developers a wide range of choice of manufacturer, and feature set. Also, going forward the
+relatively low cost of these 32-bit processors may make 8-bit processors less competitive in both an
+industrial and hobbyist perspective. Even Arduino is moving away from the AVR platform with the
+<a href="https://www.arduino.cc/en/Main/ArduinoBoardZero">Arduino Zero</a>.</p>
+<p>Also not many microcontroller families are currently supported by Rust, which uses LLVM as its
+backend. Popular microcontrollers like AVR, and PIC are not (officially) supported by LLVM
+and as the Rust compiler relies on LLVM for code generation it doesn't support them either. However,
+an <a href="https://github.com/avr-llvm/llvm">unofficial AVR backend</a> for LLVM is currently undergoing the process of being merged back
+into upstream LLVM, so this situation will likely improve in the near future.</p>
+<p><strong>TODO</strong>: might be interesting to address the new Intel Quark platforms.</p>
+<p>Do note that some of the concepts covered here like the tooling and how to use common peripherals
+are transferable to other microcontroller families.</p>
+<h1>What is a dev board?</h1>
+<p>Dev board is the short term for &quot;development board&quot;. When dealing with embedded
+systems it is typical to have an application specific PCB board which carries
+the processor you are going to write software for. However, sometimes you don't
+know what your hardware looks like at the start of a project, or maybe you want
+to be able to rapidly prototype by connecting different sensors and actuators to
+your processor without having to make a new PCB board every time. This is where
+dev boards come in, they are essentially the bare minimum you need (sometimes
+with some additional sensors for evaluation) to turn on the processor, program
+it, and connect things to it. If you are familiar with the <a href="https://www.arduino.cc/">Arduino</a> platform,
+that is a dev board.</p>
+<p>While you can use an emulator to follow along it is more fun, and more
+rewarding, to make command real hardware to do your bidding. So lets choose one!</p>
+<blockquote>
+<p><strong>TODO</strong> A picture would be useful here.</p>
+</blockquote>
+<h1>What dev board should I use/get?</h1>
+<p>I won't force you to use a specific dev board. This document has been written in
+a device-agnostic way so you can follow it with pretty much any dev board you
+want. Where a specific dev board is targeted it will be stated explicitly.</p>
+<p>Nonetheless, some dev boards are easier to work with than others. This section
+will provide you some advice on how to pick a dev board that will make your life
+easier.</p>
+<p>When we are choosing a dev board we are looking at the following parameters,
+which are outlined in more detail below:</p>
+<ul>
+<li>
+<p>Supports OpenOCD. Which is what we will use to load and debug compiled
+binaries of our Rust code.</p>
+</li>
+<li>
+<p>Has good documentation. You always will have the datasheet from the
+manufacturer, but good and easy to follow documentation on the boards pinout,
+how it relates to the processor and what other goodies you have is key.</p>
+</li>
+<li>
+<p>Community! Some dev boards have more of a following than others, while others
+will be using C/C++ the community can help with hardware related issues, or
+maybe even by providing example C code which can be helpful for getting
+started.</p>
+</li>
+</ul>
+<h2>OpenOCD support</h2>
+<p>We'll use OpenOCD to &quot;flash&quot; and debug the programs we'll develop. It's best if
+you can get a dev board with a built-in debugger that's supported by OpenOCD.
+You can see a list of such boards <a href="https://github.com/ntfreak/openocd/tree/master/tcl/board">here</a>.</p>
+<blockquote>
+<p><strong>NOTE</strong> Not all the dev boards listed in that link have an ARM Cortex-M
+microcontroller, some of them have Cortex-A processors, some have
+microcontrollers with a different architecture (e.g. AVR).</p>
+</blockquote>
+<p>One example of such dev board is the <a href="http://www.st.com/en/evaluation-tools/stm32f3discovery.html">STM32F3DISCOVERY</a> which I'm going to
+use throughout the examples of this document. It seems that most of
+the <a href="http://www.st.com/en/evaluation-tools/stm32-mcu-discovery-kits.html">other evaluation boards</a> by STM32 also have a built-in
+debugger and are supported by OpenOCD. I'm not familiar with other vendors like
+Atmel and NXP but they probably have similar offerings.</p>
+<p>Alternatively, you can use a board that doesn't have a built-in debugger if the
+microcontroller in it is supported by OpenOCD (check <a href="https://github.com/ntfreak/openocd/tree/master/tcl/target">this list</a>) and
+the board exposes a JTAG/SWD connector, but you'll also need an external
+debugger supported by OpenOCD (check <a href="https://github.com/ntfreak/openocd/tree/master/tcl/interface">this list</a>). This is more
+complicated as you'll have to read about the JTAG/SWD interface to make an
+informed decision and you'll also have to figure out how to wire up everything
+together.</p>
+<blockquote>
+<p><strong>NOTE</strong> The &quot;target list&quot; linked above not only contains Cortex-M
+microcontrollers but also devices with different architectures. Likewise, the
+&quot;interface list&quot; linked above not only lists JTAG/SWD interfaces.</p>
+</blockquote>
+<blockquote>
+<p><strong>TODO</strong> Add picture of what the connection looks like</p>
+</blockquote>
+<h2>Good documentation</h2>
+<p>The microcontroller in it should have documentation about:</p>
+<ul>
+<li>
+<p>The peripherals it provides: How they work and the registers associated with
+them. This document is known as the <em>Reference Manual</em> (<a href="http://www.st.com/resource/en/reference_manual/cd00246267.pdf">example</a>),
+although sometimes this information is contained in the <em>Data Sheet</em>
+(<a href="http://www.ti.com/lit/ds/symlink/lm3s6965.pdf">example</a>).</p>
+</li>
+<li>
+<p>Hardware bugs (yes, hardware can have bugs too!) or device limitations that
+may be present in the revision of the hardware that you own and how to work
+around them. This document is known as <em>Silicon Errata</em> or just <em>Errata Sheet</em>
+(<a href="http://www.st.com/resource/en/errata_sheet/cd00260217.pdf">example</a>).</p>
+</li>
+</ul>
+<h1>Dev boards that Rustaceans have used before</h1>
+<p>Or that we are sure work just fine.</p>
+<ul>
+<li><a href="http://www.st.com/en/evaluation-tools/stm32f3discovery.html">STM32F3DISCOVERY</a>
+<ul>
+<li>
+<p>Recommended if you are a beginner as we have beginner friendly documentation
+tailored for this specific board. Check the <a href="https://japaric.github.io/discovery">Discovery</a> book.</p>
+</li>
+<li>
+<p>There's a crate, <a href="https://crates.io/f3">f3</a>, that targets this board and provides a high
+level, easy to use API.</p>
+</li>
+<li>
+<p>Has an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Has OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>
+<p><a href="http://www.st.com/en/evaluation-tools/stm32-mcu-discovery-kits.html">Other DISCOVERY boards</a></p>
+<ul>
+<li>
+<p>Have an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Have OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="http://www.st.com/en/evaluation-tools/stm32-mcu-nucleo.html">Nucleo boards</a></p>
+<ul>
+<li>
+<p>Pretty much like the DISCOVERYs but in an Arduino-compatible form factor</p>
+</li>
+<li>
+<p>You can use Arduino shields with these boards</p>
+</li>
+<li>
+<p>Have an on-board programmer/debbuger</p>
+</li>
+<li>
+<p>Have OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="https://www.pjrc.com/teensy/">Teensy 3.x</a></p>
+<ul>
+<li>
+<p>High level crate, like f3, that targets this board: <a href="https://crates.io/crates/teensy3">teensy3</a></p>
+</li>
+<li>
+<p>Can flash programs with just a USB cable (has a USB bootloader)</p>
+</li>
+<li>
+<p>No debug support (GDB) AFAIK because the SWD pins are not exposed</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>
+<p><a href="http://www.ti.com/tool/ek-tm4c123gxl">Tiva-C Launchpad</a></p>
+<ul>
+<li>
+<p>Has an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Has OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p><a href="http://www.ti.com/tool/ek-lm4f120xl">Stellaris Launchpad</a></p>
+<ul>
+<li>
+<p>Has an on-board programmer/debugger</p>
+</li>
+<li>
+<p>Has OpenOCD and GDB support</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Arduino <a href="https://www.arduino.cc/en/Main/ArduinoBoardDue">Due</a> &amp; <a href="https://www.arduino.cc/en/Main/ArduinoBoardZero">Zero</a></p>
+<ul>
+<li>
+<p>Can flash programs with just a USB cable (has a USB bootloader)</p>
+</li>
+<li>
+<p>Debugging requires an external debugger (more hardware)</p>
+</li>
+</ul>
+</li>
+</ul>
+<h1>Setting up a development environment</h1>
+<p>Working with embedded systems requires extra tooling as cross compilation is at
+the heart of the development process. This chapter will introduce the tools
+we'll use, why we need them and how to install them on the 3 major OSes.</p>
+<p>Without further ado, these are the tools we'll use:</p>
+<ul>
+<li><a href="tools.html#Rust%20%26%20Cargo%3A%20nightly%20edition">Rust &amp; Cargo: nightly edition</a></li>
+<li><a href="tools.html#A%20cross%20C%20linker%3A%20arm-none-eabi-gcc">A cross C linker: arm-none-eabi-gcc</a></li>
+<li><a href="tools.html#Binary%20inspection%20tools">Binary inspection tools</a>
+<ul>
+<li><a href="tools.html#arm-none-eabi-objdump">arm-none-eabi-objdump</a></li>
+<li><a href="tools.html#arm-none-eabi-size">arm-none-eabi-size</a></li>
+</ul>
+</li>
+<li><a href="tools.html#A%20debugger">A debugger</a></li>
+<li><a href="tools.html#An%20emulator%3A%20QEMU">An emulator: QEMU</a></li>
+<li><a href="tools.html#Xargo">Xargo</a></li>
+<li><a href="tools.html#OpenOCD">OpenOCD</a></li>
+</ul>
+<p>The rest of this page will justify each of these tools. For installation
+instructions check the subsections of this chapter: <a href="linux.html">Linux</a>, <a href="macos.html">Mac</a> and <a href="windows.html">Windows</a></p>
+<h2>Rust &amp; Cargo: nightly edition</h2>
+<p>Rust &amp; Cargo don't need  much explanation. To build Rust programs we'll need the
+Rust compiler, <code>rustc</code>, and the Rust package manager, Cargo.</p>
+<p>What does need justification is the use of the nightly channel. We need to use
+the nightly channel because we'll make use of the following unstable features:</p>
+<ul>
+<li>
+<p><code>asm</code>: We'll use some inline assembly via the <code>asm!</code> syntax extension. But
+that syntax extension hasn't been stabilized.</p>
+</li>
+<li>
+<p><code>lang_items</code>: The need for this feature gate is sometimes artificial. The
+compiler demands some lang times, like <code>panic_fmt</code>, to be defined even if the
+functionality they provide (unwinding/panicking) is never used in our program.</p>
+</li>
+<li>
+<p>To cross compile programs we need a cross compiled <code>core</code> crate. The Rust
+project doesn't distribute a binary release of that crate for Cortex-M
+microcontrollers so we have to cross compile that crate ourselves. As the
+<code>core</code> crate relies on lots of unstable features, we have to use the nightly
+channel to cross compile it.</p>
+</li>
+</ul>
+<h2>A cross C linker: <code>arm-none-eabi-gcc</code></h2>
+<p>(<code>arm-none-eabi-gcc</code> is not a linker per se but <code>rustc</code> uses it as a proxy for
+<code>arm-none-eabi-ld</code>.)</p>
+<blockquote>
+<p>Wait, aren't we going to write Rust? Why do we need a <em>C compiler</em>?</p>
+</blockquote>
+<p><code>rustc</code> uses <code>gcc</code> to link intermediate object files so we pretty much have no
+choice.</p>
+<h2>Binary inspection tools</h2>
+<p>When working this close to the hardware and with devices that have constrained
+resources and mandatory memory layouts, it's pretty important to inspect the
+produced binaries to keep track of their sizes and to check that the produced
+binaries follow a specific memory layout.</p>
+<p>We'll mainly use the following two tools:</p>
+<h3><code>arm-none-eabi-size</code></h3>
+<p>To keep an eye on the binary size of our applications.</p>
+<h3><code>arm-none-eabi-objdump</code></h3>
+<p>To confirm the memory layout of our program matches the memory layout
+constraints of the target device.</p>
+<h2>A debugger</h2>
+<p>A debugger is vital when working with microcontrollers as other debugging
+methods like logging or <em>cough</em> <code>println</code> may not be available. This is
+specially true when you are just starting out and haven't yet written drivers
+for peripherals that allow microcontroller &lt;-&gt; PC communication.</p>
+<p>We'll mainly use <code>arm-none-eabi-gdb</code> in this document as <code>lldb</code> doesn't provide
+all the functionality we need.</p>
+<h2>An emulator: QEMU</h2>
+<p>Before trying out our first program on real hardware, we'll run it under an
+emulator to verify that the program works as expected.</p>
+<h2>Xargo</h2>
+<p>In general, cross compiling requires cross compiled &quot;standard&quot; crates like the
+<code>core</code> or the <code>std</code> crate. Binary releases of these crates for Cortex-M
+microcontrollers are not provided by the Rust project so we'll have to cross
+compile these ourselves. Just cross compiling is not enough though, as one must
+place the produced binaries in a specific directory layout called a &quot;sysroot&quot;.
+Because this process is cumbersome and error prone, I have <a href="https://github.com/japaric/xargo">created Xargo</a>.
+Xargo is a <em>transparent</em> Cargo wrapper that automatically builds and manages
+sysroots without user intervention.</p>
+<p>Usage looks like this:</p>
+<pre><code>$ cargo build --target cortex-m3 &amp;&amp; echo OK
+   Compiling app v0.1.0
+error: can't find crate for `core` [E0463]
+
+error: aborting due to previous error
+error: Could not compile `app`.
+
+To learn more, run the command again with --verbose.
+</code></pre>
+<pre><code>$ xargo build --target thumbv6m-none-eabi &amp;&amp; echo OK
+   Compiling core v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/libcore)
+   Compiling alloc v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/liballoc)
+    Finished release [optimized] target(s) in 19.56 secs
+   Compiling rustc_unicode v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/librustc_unicode)
+   Compiling collections v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/libcollections)
+    Finished release [optimized] target(s) in 5.67 secs
+    Finished release [optimized] target(s) in 0.0 secs
+   Compiling rand v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/librand)
+    Finished release [optimized] target(s) in 1.78 secs
+    Finished release [optimized] target(s) in 0.0 secs
+   Compiling app v0.1.0 (file://$PWD)
+OK
+</code></pre>
+<h2>OpenOCD</h2>
+<p><a href="tools.html#OpenOCD">OpenOCD</a> is a tool that lets your computer communicate with devices that
+support the JTAG/SWD communication protocol. We'll use OpenOCD to <em>flash</em>
+(write) our programs into the microcontroller and to debug them (with the help
+of <code>gdb</code>).</p>
+<h1>Linux</h1>
+<h2>Shortcut: Just use this docker image</h2>
+<p>It's based on Ubuntu 16.04 and comes with all the required dependencies:</p>
+<pre><code>$ docker run --privileged -it japaric/copper:2016-05-10
+# Or use a newer tag. See https://hub.docker.com/r/japaric/copper/tags
+</code></pre>
+<p>Alternatively, instead of using this docker image, you can ...</p>
+<h2>Install the tools on your system</h2>
+<p>On most Linux distributions, most of the required tools can be installed via the
+package manager. The actual command that you need to call will depend on your
+Linux distribution. But, here's the one for Ubuntu:</p>
+<pre><code>$ sudo apt-get install gcc-arm-none-eabi gdb-arm-none-eabi openocd qemu-system-arm
+</code></pre>
+<p>To install Rust and Cargo, I recommend using <a href="https://www.rustup.rs/">rustup</a>:</p>
+<pre><code>$ curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=nightly
+</code></pre>
+<p>Or if you already have rustup installed, switch to the nightly channel with:</p>
+<pre><code>$ rustup default nightly
+</code></pre>
+<p>To install Xargo simply use:</p>
+<pre><code>$ cargo install xargo
+</code></pre>
+<p>Note that Xargo 0.2.0+ depends on the <code>rust-src</code> component, so install that as
+well:</p>
+<pre><code>$ rustup component add rust-src
+</code></pre>
+<h2>First OpenOCD connection</h2>
+<blockquote>
+<p><strong>TODO</strong> document STM32VLDISCOVERY quirk</p>
+</blockquote>
+<p>Even if using the Docker image, it's a good idea to test that OpenOCD works by
+establishing a connection between your host system (PC, laptop, etc.) and your
+dev board. First, you'll have to physically connect your dev board and your host
+system via an USB cable. Then, you'll have to use a command that looks like
+this:</p>
+<pre><code>$ sudo openocd -f board/$BOARD
+</code></pre>
+<p>if you are using a dev board that has a built-in debugger. Or one like this:</p>
+<pre><code>$ sudo openocd -f interface/$INTERFACE -f target/$TARGET
+</code></pre>
+<p>if you are using an external programmer/debugger. Then, you should get an output
+like this:</p>
+<pre><code>Open On-Chip Debugger 0.9.0 (2015-09-02-10:42)
+Licensed under GNU GPL v2
+For bug reports, read
+http://openocd.org/doc/doxygen/bugs.html
+Info : The selected transport took over low-level target control. The results might differ
+compared to plain JTAG/SWD
+adapter speed: 1000 kHz
+adapter_nsrst_delay: 100
+none separate
+srst_only separate srst_nogate srst_open_drain connect_deassert_srst
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v1 JTAG v11 API v2 SWIM v0 VID 0x0483 PID 0x3744
+Info : using stlink api v2
+Info : stm32f1x.cpu: hardware has 6 breakpoints, 4 watchpoints
+</code></pre>
+<blockquote>
+<p><strong>TODO</strong> add troubleshooting instructions for when the <code>openocd</code> command
+fails.</p>
+</blockquote>
+<p>The program will block with that output, but it's okay to exit it with <code>Ctrl-C</code>
+at this time.</p>
+<p>As for the actual values of <code>$BOARD</code>/<code>$INTERFACE</code>/<code>$TARGET</code> that you must use,
+the possible values are in <code>/usr/share/openocd/scripts</code> (might be a different
+directory in your Linux distribution):</p>
+<pre><code>$ tree /usr/share/openocd/scripts
+/usr/share/openocd/scripts
+├── (...)
+├── board
+│   ├── actux3.cfg
+│   ├── adapteva_parallella1.cfg
+│   └── (...)
+├── interface
+│   ├── altera-usb-blaster2.cfg
+│   ├── altera-usb-blaster.cfg
+│   └── (...)
+├── target
+│   ├── aduc702x.cfg
+│   ├── aducm360.cfg
+│   └── (...)
+└── (...)
+</code></pre>
+<p>Try something that resembles the name of your hardware. For example, for the
+STM32VLDISCOVERY I use:</p>
+<pre><code>$ sudo openocd -f board/stm32vldiscovery.cfg
+</code></pre>
+<p>And for the STM32F3DISCOVERY, I use:</p>
+<pre><code>$ sudo openocd -f interface/stlink-v2-1.cfg -f target/stm32f3x.cfg
+</code></pre>
+<h3>(Optional) OpenOCD without <code>sudo</code></h3>
+<blockquote>
+<p><strong>NOTE</strong> For those using the Docker image. You have to run these commands on
+the host system, <em>not</em> from within the container.</p>
+</blockquote>
+<p>The reason we have to use <code>sudo</code> in the <code>openocd</code> invocations is that we don't
+have sufficient permissions to use the USB device. This can be fixed using
+<code>udev</code> rules.</p>
+<p>First let's identify the USB device OpenOCD is using from the output of <code>sudo openocd</code>:</p>
+<pre><code>$ sudo openocd
+</code></pre>
+<pre><code>$ lsusb
+(...)
+Bus 003 Device 116: ID 0483:3744 STMicroelectronics STLINK Pseudo disk
+(...)
+</code></pre>
+<p>Device number 116 on the bus 3, let's check its permissions:</p>
+<pre><code>$ ls -l /dev/bus/usb/003/116
+crw-rw-r-- 1 root root 189, 371 May  9 15:39 /dev/bus/usb/003/116
+</code></pre>
+<p>Only <code>root</code> can read/write from/to it. We'll write an udev rule to change the
+permissions of this particular USB device. udev rules are stored in
+<code>/etc/udev/rules.d</code> as files, let's add a new one:</p>
+<pre><code>$ cat /etc/udev/rules.d/99-openocd.rules
+# STLINKv1
+ATTRS{idVendor}==&quot;0483&quot;, ATTRS{idProduct}==&quot;3744&quot;, GROUP=&quot;users&quot;
+</code></pre>
+<p>This udev rule changes the group of the USB device to <code>users</code>.</p>
+<blockquote>
+<p><strong>NOTE</strong> You <em>can</em> use a group different than <code>users</code>. <strong>But</strong>, if you are
+using a Docker container, it's very likely that the id of a different group
+won't match between the host system and the container -- in that case you
+still won't have enough permissions to use the USB device!.</p>
+</blockquote>
+<blockquote>
+<p><strong>NOTE</strong> For more details about the udev rules see <a href="http://linux.die.net/man/7/udev">man 7 udev</a></p>
+</blockquote>
+<p>You'll have to change 0483 and 3744 for the vendor and product id of <strong>your</strong>
+device respectively. You can get those values from <code>lsusb</code>:</p>
+<pre><code>$ lsusb | grep STLINK
+Bus 003 Device 116: ID 0483:3744 STMicroelectronics STLINK Pseudo disk
+                       ^^^^ ^^^^
+</code></pre>
+<p>This new rule won't come into effect until you reload all the rules with:</p>
+<pre><code>$ sudo udevadm control --reload-rules
+</code></pre>
+<p>Now, unplug and re-plug the device and you should see the updated permissions:</p>
+<pre><code>$ lsusb | grep STLINK
+Bus 003 Device 118: ID 0483:3744 STMicroelectronics STLINK Pseudo disk
+
+$ ls -l /dev/bus/usb/003/118
+crw-rw-r-- 1 root users 189, 373 May  9 16:00 /dev/bus/usb/003/118
+</code></pre>
+<p>You should now be able to use your <code>openocd</code> command without <code>sudo</code> <strong>if</strong> your
+user was already part of the <code>users</code> group. If your user wasn't in that group,
+you can add yourself to this group with this command:</p>
+<pre><code>$ sudo usermod -a -G users $(whoami)
+</code></pre>
+<p>You'll have to re-log for this last command to take effect.</p>
+<h1>macOS</h1>
+<p>You can install most of the required tools using <code>brew</code>:</p>
+<pre><code># NOTE if you get &quot;Error: Unknown command: cask&quot;, then run this command: `brew tap Caskroom/cask`
+# and try again
+$ brew cask install gcc-arm-embedded
+$ brew install openocd qemu
+</code></pre>
+<p>To install Rust and Cargo, I recommend using <a href="https://www.rustup.rs/">rustup</a>:</p>
+<pre><code>$ curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain=nightly
+</code></pre>
+<p>Or if you already have rustup installed, switch to the nightly channel with:</p>
+<pre><code>$ rustup default nightly
+</code></pre>
+<p>To install Xargo simply use:</p>
+<pre><code>$ cargo install xargo
+</code></pre>
+<p>Note that Xargo 0.2.0+ depends on the <code>rust-src</code> component so install that as
+well:</p>
+<pre><code>$ rustup component add rust-src
+</code></pre>
+<h2>Testing OpenOCD</h2>
+<p>Follow <a href="linux.html#First%20OpenOCD%20connection">these instructions</a> to test connecting to your programmer/debugger using
+OpenOCD.</p>
+<h1>Windows</h1>
+<p>There's no default package manager in Windows so you'll have to scavenge the
+tools from different locations:</p>
+<h2>Cross toolchain and Co.</h2>
+<p>The C cross compiler, the binary inspection tools and the debugger can all be
+installed from a <a href="https://launchpad.net/gcc-arm-embedded/+download">single place</a>. Simply grab the latest <code>.exe</code> installer, run it
+and follow the instructions. Before finishing the installation process, make
+sure to check the &quot;Add path to environment variable&quot; option.</p>
+<p>Check that the tools are really in your <code>PATH</code></p>
+<pre><code>$ arm-none-eabi-gcc -v
+(..)
+gcc version 5.4.1 20160609 (..)
+
+$ arm-none-eabi-size -v
+GNU size &lt;GNU Tools for ARM Embedded Processors&gt; 2.26.0.20160616
+(..)
+
+$ arm-none-eabi-gdb -v
+GNU gdb &lt;GNU Tools for ARM Embedded Processors&gt; 7.10.1.20160616-cvs
+(..)
+</code></pre>
+<h2>OpenOCD</h2>
+<p>There are no official binary releases of OpenOCD for Windows, but <a href="http://gnutoolchains.com/arm-eabi/openocd/">this page</a>
+has unofficial releases. There is not installer so grab the latest zipfile and
+unpack somewhere in your main drive. Then update your <code>PATH</code> variable by
+appending <code>;Z:\directory\where\you\extracted\the\zipfile\bin</code> to it. This should
+make the <code>openocd</code> command available anywhere:</p>
+<pre><code>$ echo %path%
+(..);C:\OpenOCD-0.9.0-Win32\bin
+
+$ openocd -v
+Open On-Chip Debugger 0.9.0 &lt;2015-08-15-12:41&gt;
+(..)
+</code></pre>
+<p>After installing OpenOCD, be sure to test it using <a href="linux.html#First%20OpenOCD%20connection">these instructions</a>. The
+instructions are for Linux but they pretty much hold for Windows: just ignore
+the <code>sudo</code> part of the commands used there.</p>
+<p>There are some caveats with using OpenOCD on Windows:</p>
+<ul>
+<li>OpenOCD script search path will be empty. Commands like <code>openocd -f board/stm32vldiscovery.cfg</code> will fail to find the <code>.cfg</code> file. This can be
+remedied by passing an extra argument to the command: <code>openocd -s Z:\path\to\openocd\share\openocd\scripts -f board/stm32vldiscovery.cfg</code>.</li>
+</ul>
+<blockquote>
+<p><strong>TODO</strong> There must be a better solution to the script search path problem</p>
+</blockquote>
+<ul>
+<li>Some (hardware) programmers/debuggers (like the ST-LINK/V1) will try to use
+the &quot;wrong&quot; driver by default and the <code>openocd</code> command will always fail with
+<code>LIBUSB_ERROR_NOT_SUPPORTED</code>. You'll have to switch their driver to the WinUSB
+driver using Zadig (see the following section for more information).</li>
+</ul>
+<h2>(Optional) Zadig</h2>
+<p>If you are getting the <code>LIBUSB_ERROR_NOT_SUPPORTED</code> error when trying to connect
+to your programmer/debugger using OpenOCD, use Zadig to override the USB driver
+that Windows picked:</p>
+<ul>
+<li>
+<p>First, install Zadig from <a href="http://zadig.akeo.ie/">its website</a>.</p>
+</li>
+<li>
+<p>Make sure your device is connected to the host machine!</p>
+</li>
+<li>
+<p>Then launch Zadig and choose the menu item: Options &gt; List all devices.</p>
+</li>
+<li>
+<p>The drop-down list should now be populated; from it, pick your device (e.g.
+STM32 STlink).</p>
+</li>
+<li>
+<p>Pick WinUSB as the target driver, click the &quot;Replace Driver&quot; button and follow
+the instructions that pop up.</p>
+</li>
+</ul>
+<p>Try the <code>openocd</code> command again; it should succeed this time.</p>
+<h2>QEMU</h2>
+<p>You can find unofficial binaries <a href="https://qemu.weilnetz.de/">here</a>. Install a recent version and add
+<code>;Z:\Program Files\qemu</code> to your <code>PATH</code>.</p>
+<p>Test it with:</p>
+<pre><code>$ qemu-system-arm -version
+</code></pre>
+<p>The command won't print to the console but instead redirect its output to the
+file <code>Z:\Program Files\qemu\stdout</code>. It should contain something like this:</p>
+<pre><code>$ type Z:\Program Files\qemu\stdout.txt
+</code></pre>
+<h2>Rust and Cargo</h2>
+<p>Head to the <a href="https://www.rustup.rs/">rustup</a> website and follow the instructions.</p>
+<h2>Xargo</h2>
+<p>Simply call this command:</p>
+<pre><code>$ cargo install xargo
+</code></pre>
+<p>Note that Xargo 0.2.0+ depends on the <code>rust-src</code> component, so install that as
+well:</p>
+<pre><code>$ rustup component add rust-src
+</code></pre>
+<h1>First program</h1>
+<p>In this chapter we'll write our first program! Although the program is going to be relatively
+uninteresting -- it just allocates some variables on the stack. It will help us:</p>
+<ul>
+<li>Verify that the development environment is correctly set up.</li>
+<li>Get familiar with the several tools that make up the development environment.</li>
+<li>Learn about the device-specific pieces required for cross compilation.</li>
+</ul>
+<p>We'll first cross compile this program for the <a href="http://www.ti.com/product/LM3S6965">LM3S6965</a> microcontroller and then run it under
+QEMU. After we verify that it works correctly, we'll run the program on real hardware.</p>
+<h1>Build &amp; inspect</h1>
+<p>Let's start by creating a new Cargo project:</p>
+<pre><code>$ cargo new --bin app &amp;&amp; cd $_
+</code></pre>
+<p>And then add these files to the project:</p>
+<ul>
+<li>
+<p><a href="./first/layout.ld">layout.ld</a> - a &quot;linker script&quot;</p>
+</li>
+<li>
+<p><a href="./first/config.toml">.cargo/config</a> - a project local Cargo configuration
+file</p>
+</li>
+<li>
+<p><a href="./first/main.rs">src/main.rs</a></p>
+</li>
+</ul>
+<p>I'll explain what the linker script and the Cargo configuration file are for in
+a later section. It's not important to know what it does <em>right now</em>.</p>
+<p>Your project directory should look like this:</p>
+<pre><code>$ tree .
+.
+├── .cargo
+│   └── config
+├── Cargo.toml
+├── layout.ld
+└── src
+    └── main.rs
+</code></pre>
+<p>For convenience, <code>src/main.rs</code> is replicated here:</p>
+<pre><code class="language-rust">#![feature(lang_items)]
+
+// We won't use the usual `main` function. We are going to use a different
+// &quot;entry point&quot;.
+#![no_main]
+
+// We won't use the standard library because it requires OS abstractions like
+// threads and files and those are not available on this platform.
+#![no_std]
+
+// Conceptually, this is our program &quot;entry point&quot;. It's the first thing the
+// microcontroller will execute when it (re)boots. This entry point must be a
+// `pub`lic function named `_reset` to be recognized as such because that's what
+// our linker script (`layout.ld`) states. Later, we'll say more about these
+// requirements.
+//
+// Also, returning from this function is undefined because there is nothing to
+// return to! To statically forbid returning from this function, we mark it as
+// &quot;divergent&quot;, hence the `fn() -&gt; !` signature.
+#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    // Our first program initializes some variables on the stack and does
+    // nothing more. Yay!
+    let y;
+    let x = 42;
+    y = x;
+
+    // We can't return from this function so we just spin endlessly here.
+    loop {}
+}
+
+// Finally, we need to define the panic_fmt &quot;lang item&quot;, which is just a
+// function. This specifies what the program should do when a `panic!` occurs.
+// Our program won't panic, so we can leave the function body empty for now.
+mod lang_items {
+    #[lang = &quot;panic_fmt&quot;]
+    extern &quot;C&quot; fn panic_fmt() {}
+}
+</code></pre>
+<p>If you have written a native Rust program before, this shouldn't look that
+different except that <code>main</code> has a different signature.</p>
+<p>Now you can build the Cargo project:</p>
+<pre><code>$ xargo build --target thumbv7m-none-eabi
+   Compiling core v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/libcore)
+   Compiling alloc v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/liballoc)
+    Finished release [optimized] target(s) in 19.56 secs
+   Compiling rustc_unicode v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/librustc_unicode)
+   Compiling collections v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/libcollections)
+    Finished release [optimized] target(s) in 5.67 secs
+    Finished release [optimized] target(s) in 0.0 secs
+   Compiling rand v0.0.0 (file://$sysroot/lib/rustlib/src/rust/src/librand)
+    Finished release [optimized] target(s) in 1.78 secs
+    Finished release [optimized] target(s) in 0.0 secs
+   Compiling app v0.1.0 (file://$PWD)
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> Do <strong>not</strong> build the project in release mode!</p>
+</blockquote>
+<blockquote>
+<p><strong>NOTE</strong> You may not see Xargo compile <code>core</code> and the other &quot;standard&quot; crates
+if the sysroot was already compiled.</p>
+</blockquote>
+<h2>Trust, but verify</h2>
+<p>The project appeared to build fine, but it's always a good idea to inspect the
+executable. We are going to look at three things:</p>
+<h3>Memory layout</h3>
+<p>First, you have to appreciate the fact that, during its execution, everything in
+a program resides in (physical) memory and has an associated memory address.
+Now, everything that's <em>statically allocated</em>, like functions and static
+variables, gets assigned an address at compile time. Whereas, everything else,
+like local/stack variables and &quot;heap&quot; allocated variables, gets assigned an
+address at runtime.</p>
+<p>We can observe the addresses of statically allocated stuff using <code>objdump</code>.
+Let's check our executable:</p>
+<pre><code># with
+$ arm-none-eabi-objdump --demangle --disassemble target/thumbv7m-none-eabi/debug/app
+
+# or its shorter form
+$ arm-none-eabi-objdump -Cd target/thumbv7m-none-eabi/debug/app
+
+target/thumbv7m-none-eabi/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+   4:   00000009        .word   0x00000009
+
+00000008 &lt;_reset&gt;:
+   8:   b083            sub     sp, #12
+   a:   e7ff            b.n     c &lt;_reset+0x4&gt;
+   c:   202a            movs    r0, #42 ; 0x2a
+   e:   9002            str     r0, [sp, #8]
+  10:   9001            str     r0, [sp, #4]
+  12:   e7ff            b.n     14 &lt;_reset+0xc&gt;
+  14:   e7fe            b.n     14 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Let me highlight the important bits of the output:</p>
+<pre><code>00000000
+   0:   20010000
+
+00000004
+   4:   00000009
+
+00000008 &lt;_reset&gt;:
+   8:                   sub     sp, #12
+   a:                   b.n     c &lt;_reset+0x4&gt;
+   c:                   movs    r0, #42 ; 0x2a
+   e:                   str     r0, [sp, #8]
+  10:                   str     r0, [sp, #4]
+  12:                   b.n     14 &lt;_reset+0xc&gt;
+  14:                   b.n     14 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Now let's read the output section by section:</p>
+<pre><code>00000000
+   0:   20010000
+</code></pre>
+<p>&quot;The memory at address <code>0x0</code> holds the (<code>u32</code>) value <code>0x2001_0000</code>&quot;. When the
+program starts its execution, that part of the memory will be already
+initialized to that value.</p>
+<pre><code>00000004
+   4:   00000009
+</code></pre>
+<p>Likewise, &quot;the memory at <code>0x4</code> holds the  (<code>u32</code>) value <code>0x9</code>&quot;.</p>
+<pre><code>00000008 &lt;start&gt;:
+   8:               sub sp, #8
+   a:               movs    r0, #42 ; 0x2a
+   c:               str r0, [sp, #4]
+   e:               str r0, [sp, #0]
+  10:               b.n 12 &lt;start+0xa&gt;
+  12:               b.n 12 &lt;start+0xa&gt;
+</code></pre>
+<p>Finally, &quot;the <code>start</code> function resides at address <code>0x8</code>&quot;. The lines, like
+<code>sub sp, #8</code>, below <code>&lt;start&gt;</code> are the instructions that make up the function.
+When the processor executes this function, it will execute each one of these
+instructions.</p>
+<p>But, why are these addresses/values important? During boot, the microcontroller
+reads the memory section at <code>0x0..0x8</code> and uses those  values to complete the
+boot process. In other words, the values in that memory section have an special
+meaning to the boot process. In a <a href="details/boot.html">later section</a>, we'll explain what those
+values mean and how they are used in the boot process. For now, it's okay to
+just confirm that the memory at <code>0x0..0x8</code> is initialized.</p>
+<h3>Program size</h3>
+<p>Microcontrollers are memory constrained devices. It's important to keep an eye
+on the size of our programs to make sure they don't exceed the memory capacity
+of our device. We'll use the <code>size</code> command to do that:</p>
+<pre><code>$ arm-none-eabi-size target/thumbv7m-none-eabi/debug/app
+   text    data     bss     dec     hex filename
+     22       0       0      22      16 target/thumbv7m-none-eabi/debug/app
+</code></pre>
+<p>The output mentions three different memory <em>sections</em>:</p>
+<ul>
+<li>The <code>text</code> section contains the &quot;program code&quot;, i.e. all the instructions that
+the processor will execute when the program is executed. Functions go in this
+section. This section also stores   constants like strings. <code>static CONSTANT: &amp;'static str = &quot;Hello, world!&quot;</code>is an example of a constant.</li>
+<li><code>data</code> holds static variables that have an initial value, for example <code>static mut X: i32 = 42</code>.</li>
+<li>On the contrary, <code>bss</code> holds &quot;uninitialized&quot; static variables. Because of C
+heritage, here &quot;uninitialized&quot; actually means <em>zeroed</em>. For example, <code>static mut ZEROS: [u8; 4] = [0; 4]</code> would go in this section.</li>
+</ul>
+<p><code>dec</code> is just the sum of these three sections and <code>hex</code> is the hexadecimal
+representation of <code>dec</code>.</p>
+<p>Our program size is just 22 bytes big! Microcontrollers usually have memory
+capacities in the order of a few KiB up to hundreds of KiB. In particular, the
+LM3S6965 microcontroller, which we are going to emulate, has 256KiB of (Flash)
+memory. So, no problem here; this program will fit in the device memory.</p>
+<blockquote>
+<p><strong>NOTE</strong> KiB = <a href="https://en.wikipedia.org/wiki/Kibibyte">Kibibyte</a> = 1024 bytes</p>
+</blockquote>
+<h3>Entry point</h3>
+<p>To work properly, tools like <code>gdb</code> and <code>qemu</code> need to be informed about the
+program entry point, which is where the program starts its execution.</p>
+<p>We can check our program entry point using the <code>readelf</code> command:</p>
+<pre><code>$ arm-none-eabi-readelf -h target/thumbv7m-none-eabi/debug/app
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           ARM
+  Version:                           0x1
+  Entry point address:               0x9 &lt;--
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          67236 (bytes into file)
+  Flags:                             0x5000200, Version5 EABI, soft-float ABI
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         2
+  Size of section headers:           40 (bytes)
+  Number of section headers:         15
+  Section header string table index: 12
+</code></pre>
+<p>There you can see that <code>0x9</code> is the entry point address. From the previous
+<code>objdump</code> output, you know that <code>0x8</code> is the address of the <code>main</code> function
+which we want to be the entry point. At first, this looks wrong because the
+address is off by 1, but this is actually correct.</p>
+<p>Cortex M microcontrollers always operate in &quot;thumb&quot; mode (i.e. they use &quot;thumb&quot;
+instructions). To indicate this thumb state all function address have their
+first bit (position 0) set to 1. Because <code>0x8 | 0b1</code> is <code>0x9</code>, <code>0x9</code> is the
+address of <code>main</code> when called in thumb mode.</p>
+<p>This means that <code>main</code> have been correctly declared as the entry point.</p>
+<h1>Run the program under QEMU</h1>
+<p>Now that we have an executable in our hands, it's time to test it under an
+emulator! You may be wondering &quot;how are we going to do that?&quot; since the program
+doesn't do any I/O. Well, instead of expecting the program to output something
+to the terminal (which won't happen), we are going to &quot;hook&quot; a debugger to the
+emulator, execute the program &quot;statement by statement&quot; and verify that the
+emulated memory changes as the program executes. Sounds fun? You bet it is.</p>
+<p>Let's start! The first thing we have to do is load our binary in the emulator
+with this command:</p>
+<pre><code>$ qemu-system-arm \
+    -cpu cortex-m3 \
+    -machine lm3s6965evb \
+    -gdb tcp::3333 \
+    -S \
+    -nographic -monitor null \
+    -serial null \
+    -kernel target/thumbv7m-none-eabi/debug/app
+</code></pre>
+<p>So many arguments! Let's explain why all those are there for:</p>
+<ul>
+<li>
+<p><code>qemu-system-arm</code> this is a QEMU variant that can emulate an ARM processor in
+system mode emulation.</p>
+</li>
+<li>
+<p><code>-machine lm3s6965evb</code> this is the dev board we are going to emulate: the
+<a href="http://www.ti.com/lit/ug/spmu029a/spmu029a.pdf">LM3S6965EVB</a>.</p>
+</li>
+<li>
+<p><code>-cpu cortex-m3</code> this is the CPU to emulate, it must match the CPU of the
+emulated <code>machine</code>.</p>
+</li>
+<li>
+<p><code>-gdb tcp::3333</code> tells the emulator to expect a gdb connection on port <code>3333</code>,
+we need this to control the execution of the emulated program under gdb.</p>
+</li>
+<li>
+<p><code>-S</code> &quot;do not immediately start the CPU&quot;. This tells the emulator to load the
+program but don't immediately execute it, otherwise by the time you attach
+<code>gdb</code> your program may have already terminated!</p>
+</li>
+<li>
+<p><code>-nographic</code>, <code>-monitor null</code> we don't need anything graphic related</p>
+</li>
+<li>
+<p><code>-serial null</code> we are not going to use the serial console this time</p>
+</li>
+<li>
+<p><code>-kernel target/thumbv7m-none-eabi/debug/app</code> use our binary directly as the
+&quot;kernel&quot; which is the first thing the emulator executes.</p>
+</li>
+</ul>
+<p>This command will block; just leave it running for now.</p>
+<p>Next we hook a debugger to the emulator we just started. In another terminal,
+type:</p>
+<pre><code>$ arm-none-eabi-gdb -q target/thumbv7m-none-eabi/debug/app
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> You can use <code>lldb</code> instead of <code>gdb</code> but you won't be able to use the
+same commands I have used here, because <code>lldb</code> uses different commands to
+expose the same functionality as <code>gdb</code>. <a href="http://lldb.llvm.org/lldb-gdb.html">This page</a> will help you map <code>gdb</code>
+commands to <code>lldb</code>'s and vice versa.</p>
+</blockquote>
+<p>Under this <code>gdb</code> session, enter the following command to connect to the
+emulator:</p>
+<pre><code>(gdb) target remote :3333
+</code></pre>
+<p>You should see an output like this:</p>
+<pre><code>Remote debugging using :3333
+app::main () at $PWD/src/main.rs:6
+6       pub extern &quot;C&quot; fn main() -&gt; ! {
+</code></pre>
+<p>The emulator is <em>halted</em> and currently at the program entry point: <code>main</code>. You
+can now execute the program statement by statement using the <code>step</code> command:</p>
+<pre><code>(gdb) step
+8           let x = 42
+(gdb) step
+9           y = x
+</code></pre>
+<p>At this point the statement <code>let x = 42</code> has been executed but the statement
+<code>y = x</code> has not, so <code>x</code> is initialized but <code>y</code> is not. Let's inspect both
+variables by <code>print</code>ing their addresses and values.</p>
+<pre><code>(gdb) print x
+$1 = 42
+(gdb) print &amp;x
+$2 = (i32 *) 0x2000fff8
+(gdb) print y
+$3 = 0
+(gdb) print &amp;y
+$4 = (i32 *) 0x2000fffc
+</code></pre>
+<p>A few things to note:</p>
+<ul>
+<li>
+<p>Both <code>x</code> and <code>y</code> live in the &quot;stack&quot;. That's why they have contiguous
+addresses.</p>
+</li>
+<li>
+<p><code>y</code>, which was declared before <code>x</code>, has a larger address than <code>x</code>. The reason
+is that the stack grows downwards (toward smaller addresses). If you keep
+creating stack variables, you'll see their addresses get smaller and smaller.</p>
+</li>
+<li>
+<p><code>y</code> which is currently uninitialized holds the value <code>0</code> -- this is a QEMU
+simplification. On real hardware you will observe that uninitialized variables
+hold random values. Of course, (safe) Rust won't actually let you <em>use</em>
+uninitialized variables but you can peek at them using <code>gdb</code>.</p>
+</li>
+</ul>
+<p>Back to the debugger. If you step again, you should see that <code>y</code> is now
+initialized:</p>
+<pre><code>(gdb) step
+11          loop {}
+(gdb) print y
+$5 = 42
+</code></pre>
+<p>The emulator is about to execute an endless loop. If you call <code>step</code> again,
+<code>gdb</code> will get stuck in the loop and hang. Instead, call <code>stepi</code> to advance <em>one
+instruction</em> rather than one statement.</p>
+<pre><code>(gdb) stepi
+0x00000014      10          loop {}
+(gdb) stepi
+0x00000014      10          loop {}
+</code></pre>
+<p>Congrats, you are now stuck in an endless loop!</p>
+<p>There is not much left to do in this emulation. But, before you terminate the
+<code>gdb</code> session and exit the emulator ...</p>
+<h2>Homework</h2>
+<p><code>gdb</code> has an <a href="http://www.delorie.com/gnu/docs/gdb/gdb_56.html">&quot;examine&quot;</a> command that let's you inspect the contents of memory
+at a certain address. Try the following command:</p>
+<pre><code>(gdb) x/4x main
+</code></pre>
+<p>Compare the output of that command with the output of the command:
+<code>arm-none-eabi-objdump -Cd target/thumbv7m-none-eabi/debug/app</code>. Are the outputs
+related somehow? Elaborate.</p>
+<h1>Nitty-gritty details</h1>
+<blockquote>
+<p>My program works! I have no idea why ...</p>
+</blockquote>
+<p>Great! We wrote a program that worked in the emulator. But I omitted some
+important details to simplify things, so we could focus our attention on the
+tooling. In particular, I didn't tell you that our Cargo project generates
+binaries that only work on the LM3S6965! It's time to take a step back and
+understand all the pieces involved. In particular:</p>
+<ul>
+<li>What's the role of that extra file, <code>layout.ld</code>, that we added to the Cargo
+project?</li>
+<li>Why we used <code>thumbv7m-none-eabi</code> as the cross compilation target?</li>
+<li>Why we had to add a <code>.cargo/config</code> to our Cargo project?</li>
+</ul>
+<p>Once you understand that, you'll be able to write programs for <strong>any</strong> Cortex-M
+microcontroller.</p>
+<h1>Target specification</h1>
+<p>In this section, we explain why we compiled our crate with <code>--target thumbv7m-none-eabi</code>.</p>
+<p>Building a Rust program for a Cortex-M microcontroller involves cross compiling.
+Cross compilation is the process of building a binary that will run on a
+<strong>target</strong> device/system that's different from the <strong>host</strong> device/system where
+the binary was produced. In our case, the target is the Cortex-M microcontroller
+and the host is your laptop or your PC.</p>
+<p>Out of the box, <code>rustc</code>, and therefore Cargo, can cross compile for a bunch of
+different targets using the <code>--target</code> flag.</p>
+<p>Here's the list of supported cross compilation targets as of November of 2016
+(this list will continue growing over time):</p>
+<pre><code>$ rustc -V
+rustc 1.14.0-nightly (cae6ab1c4 2016-11-05)
+
+$ rustc --print target-list
+aarch64-linux-android           mips64el-unknown-linux-gnuabi64
+aarch64-unknown-fuchsia         mipsel-unknown-linux-gnu
+aarch64-unknown-linux-gnu       mipsel-unknown-linux-musl
+arm-linux-androideabi           mipsel-unknown-linux-uclibc
+arm-unknown-linux-gnueabi       powerpc-unknown-linux-gnu
+arm-unknown-linux-gnueabihf     powerpc64-unknown-linux-gnu
+arm-unknown-linux-musleabi      powerpc64le-unknown-linux-gnu
+arm-unknown-linux-musleabihf    s390x-unknown-linux-gnu
+armv7-linux-androideabi         thumbv6m-none-eabi
+armv7-unknown-linux-gnueabihf   thumbv7em-none-eabi
+armv7-unknown-linux-musleabihf  thumbv7em-none-eabihf
+asmjs-unknown-emscripten        thumbv7m-none-eabi
+i586-pc-windows-msvc            wasm32-unknown-emscripten
+i586-unknown-linux-gnu          x86_64-apple-darwin
+i686-apple-darwin               x86_64-pc-windows-gnu
+i686-linux-android              x86_64-pc-windows-msvc
+i686-pc-windows-gnu             x86_64-rumprun-netbsd
+i686-pc-windows-msvc            x86_64-sun-solaris
+i686-unknown-dragonfly          x86_64-unknown-bitrig
+i686-unknown-freebsd            x86_64-unknown-dragonfly
+i686-unknown-haiku              x86_64-unknown-freebsd
+i686-unknown-linux-gnu          x86_64-unknown-fuchsia
+i686-unknown-linux-musl         x86_64-unknown-haiku
+le32-unknown-nacl               x86_64-unknown-linux-gnu
+mips-unknown-linux-gnu          x86_64-unknown-linux-musl
+mips-unknown-linux-musl         x86_64-unknown-netbsd
+mips-unknown-linux-uclibc       x86_64-unknown-openbsd
+mips64-unknown-linux-gnuabi64
+</code></pre>
+<p>Luckily for us, since nightly-2016-10-05, <code>rustc</code> supports Cortex-M
+microcontrollers as cross compilation targets. Furthermore, there is not 1 but
+actually 4 different targets. Which one to pick depends on which microcontroller
+you are targeting:</p>
+<ul>
+<li>
+<p><code>thumbv6m-none-eabi</code>. For Cortex-M0, Cortex-M0+ and Cortex-M1 micros.</p>
+</li>
+<li>
+<p><code>thumbv7m-none-eabi</code>. For the Cortex-M3 micro.</p>
+</li>
+<li>
+<p><code>thumbv7em-none-eabi</code>. For the Cortex-M4 and Cortex-M7 micros that <em>don't</em>
+have a FPU.</p>
+</li>
+<li>
+<p><code>thumbv7em-none-eabihf</code>. For the Cortex-M4 and Cortex-M7 micros that <em>have</em> a
+FPU.</p>
+</li>
+</ul>
+<p>In the case of the LM3S6965, we want to use the <code>thumbv7m-none-eabi</code> target
+because that microcontroller has a Cortex-M3 processor in it.</p>
+<h1>Boot process</h1>
+<p>In this section, we'll learn what the microcontroller does right after it's
+powered.</p>
+<h2>Memory</h2>
+<p>But before that, we have to talk a little about the different types of memory
+available in a microcontroller. Cortex-M microcontrollers have at least two
+different types of memory available to them: Flash memory and Random Access
+Memory (RAM).</p>
+<p>Flash memory is non-volatile and it's used to store the <code>text</code> section of our
+program, i.e. functions and constants. Because this memory is non-volatile, our
+program will persist in memory even after the microcontroller is powered off.</p>
+<p>RAM, on the other hand, is volatile and it's used to store the <a href="https://en.wikipedia.org/wiki/Call_stack">call stack</a>, the
+<a href="https://en.wikipedia.org/wiki/Memory_management#HEAP">heap</a> and static variables. Because RAM is volatile, its contents are lost when
+the microcontroller is powered off. Also, when the microcontroller have just
+been powered on, its RAM is filled with random values.</p>
+<p>These two different memories can be accessed by the processor through the same
+32 bit address space. For instance, the LM3S6965 has the following memory
+specifications:</p>
+<ul>
+<li>256 KiB of flash memory. The flash memory region starts at address <code>0x0</code> and
+ends at address <code>0x40000</code>.</li>
+<li>64 KiB of RAM. The RAM region starts at address <code>0x2000_0000</code> and ends at address <code>0x2001_0000</code>.</li>
+</ul>
+<h3>Vector table</h3>
+<p>On Cortex-M microcontrollers, the beginning of the flash memory holds a data
+structure known as the &quot;vector table&quot;. The values stored in the vector table are
+used in different hardware processes like the boot process.</p>
+<p>The vector table is, effectively, an array of pointers and each of its elements
+is used for a different purpose. The vector table is fully documented <a href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0552a/BABIFJFG.html">here</a>.
+But, right now, we are only interested in its first two elements:</p>
+<ol>
+<li>At <code>0x0</code>: the initial value of the stack pointer.</li>
+</ol>
+<p>The stack pointer is a register used to track the top of the call stack. The
+initial value determines where in memory the call stack will be initialized. As
+per the <a href="http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042f/IHI0042F_aapcs.pdf#page=16&amp;zoom=auto,52,151">AAPCS</a> (ARM Architecture Procedure Call Standard), the call
+stack grows downwards (towards smaller addresses). That's why the initial value
+of the stack pointer is usually set to the largest valid address of the RAM
+region.</p>
+<ol start="2">
+<li>At <code>0x4</code>: the reset vector</li>
+</ol>
+<p>A &quot;vector&quot; is a pointer to a &quot;handler&quot; and a &quot;handler&quot; is just another name for
+a function. Therefore, the reset vector is a (function) pointer to the reset
+handler. The reset handler gets called, through the reset vector, whenever a
+reset occurs and during the boot process.</p>
+<h2>Putting everything together</h2>
+<p>Here's what happens during the boot process or whenever the microcontroller is
+reset:</p>
+<ul>
+<li>
+<p><code>SP = *(0x0 as *const u32)</code>. The stack pointer, which is a (CPU) register,
+is initialized to the value stored at address <code>0x0</code>.</p>
+</li>
+<li>
+<p><code>mem::transmute::&lt;_, fn()&gt;(0x4)()</code>. The reset handler gets called through the
+reset vector.</p>
+</li>
+</ul>
+<h2>The takeaway</h2>
+<p>What you should remember from all this is that the programs you write for
+Cortex-M microcontrollers must comply with a <strong>specific memory layout</strong>. In
+particular, the memory section at address <code>0x0</code>, the vector table, must be
+properly initialized or your microcontroller won't boot! In the next section,
+we'll go over the boot process again using the LM3S6965 as an example.</p>
+<h1>Linker script</h1>
+<p>As we saw in the previous section, our program must comply with a specific
+memory layout for the microcontroller to work properly (otherwise it won't
+boot!).</p>
+<p>The linker is what ultimately determines the memory layout of our program. To
+some extent, we can control the linker, and therefore the memory layout of our
+program, using a file called linker script.</p>
+<p>For our first program, I gave you the linker script <code>layout.ld</code>. In this
+section, I'll explain its contents.</p>
+<h2>Terminology</h2>
+<p>First, let's define some terms you'll often hear when dealing with linker
+scripts.</p>
+<h3>Linking</h3>
+<p>The process of producing a binary from a Rust source code involves two steps (or
+several more if you peek inside <code>rustc</code>'s pipeline): compiling and linking.
+Compiling is the action of producing an intermediate file known as &quot;object file&quot;
+from the source code. In Rust, the minimal compilation unit is the crate which
+can be a single <code>.rs</code> or a collection of them. Each crate gets compiled to an
+object file (actually, dependencies get compiled to <code>.rlib</code>s which are a object
+files plus some &quot;metadata&quot;). To produce the final binary/executable, the
+compiled crates get &quot;merged&quot; together; this process is known as linking.</p>
+<h3>Symbol</h3>
+<p>A symbol is either a function or a static variable. Each symbol has a name, a
+start address and occupies some space memory. For example, our program entry
+point is a symbol with name <code>_reset</code> and address <code>0x8</code> and occupies 14 bytes (7
+16-bit instructions) in memory.</p>
+<h3>Section</h3>
+<p>A section is a collection of symbols stored in contiguous memory. Other way to
+think about this is that symbols are <em>organized</em> in sections.</p>
+<h3>Region</h3>
+<p>A (memory) region is a span of memory that's described using a start address and
+a length (in bytes). For example, the LM3S6965 has two memory regions: Its flash
+memory region which starts at address <code>0x0</code> and has a size of 256 KiB, and its
+RAM region which starts at address <code>0x2000_0000</code> and has a size of 64 KiB.</p>
+<h3>Object files</h3>
+<p>The linker takes as input one or more object files and outputs a single object
+file. In this book, we'll be exclusively working with object files in the ELF
+format. ELF also happens to be the format Linux executables use, but there exist
+other formats like Mach-O (macOS) and COFF (Windows).</p>
+<h2><code>layout.ld</code></h2>
+<p>Instead of explaining the linker script syntax (which is documented
+<a href="https://sourceware.org/binutils/docs/ld/Scripts.html">elsewhere</a>), I'm going to focus on explaining the contents of the <code>layout.ld</code>
+file and how this file relates to the boot process we covered in the previous
+section.</p>
+<p>For convenience, here's the full linker script.</p>
+<pre><code>ENTRY(_reset);
+
+MEMORY
+{
+  FLASH : ORIGIN = 0x00000000, LENGTH = 256K
+  RAM   : ORIGIN = 0x20000000, LENGTH = 64K
+}
+
+SECTIONS
+{
+  .text :
+  {
+    /* Vector table */
+    LONG(ORIGIN(RAM) + LENGTH(RAM))
+    LONG(_reset + 1);
+
+    /* Reset handler */
+    _reset = .;
+    *(.text._reset)
+
+    *(.text*)
+  } &gt; FLASH
+
+  /DISCARD/ :
+  {
+    *(.ARM.exidx*)
+    *(.note.gnu.build-id*)
+  }
+}
+</code></pre>
+<p>Let's go over it block by block</p>
+<h3>ENTRY</h3>
+<p><code>ENTRY(_reset)</code>. This indicates that the <code>_reset</code> symbol is our program entry
+point. Getting the entry point right is important because the linker will remove
+any symbol that is not referenced by the entry point because it's &quot;dead code&quot;.
+If you get it wrong, then the compiler may remove all the symbols and produce an
+empty executable.</p>
+<p>Because <code>_reset</code> is the name of entry point, our Rust program must somehow
+expose a symbol with that exact name. That's why we used the <code>export_name</code>
+attribute in our program:</p>
+<pre><code>#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! { .. }
+</code></pre>
+<p>Note that the function has type <code>extern &quot;C&quot; fn</code>. This forces the compiler to
+lower this function to a subroutine that adheres to the C ABI. We use the C ABI
+rather than Rust's ABI here because Rust's ABI is not stable and because the
+Cortex-M processor expects the subroutine to use the C ABI.</p>
+<p>Also, mind you that getting the name right is not sufficient for this to work.
+The symbol must also be a &quot;global&quot; symbol. This &quot;global&quot; requirement is
+fulfilled by making <code>main</code> public.</p>
+<p><code>nm</code> is a useful tool to debug problems about symbol names and visibility. Let's
+give it a try to verify that our program generates a global symbol named
+<code>_reset</code>. First, you'll have to generate an object file from your crate.</p>
+<pre><code>$ xargo rustc --target thumbv7m-none-eabi -- --emit=obj
+</code></pre>
+<p>The reason we want an object file is that we want to look at the symbols <code>rustc</code>
+generates from our program <em>before</em> the linker gets a chance to drop them.</p>
+<p>The object file will be named <code>app.o</code> and will sit in the
+<code>target/thumbv7m-none-eabi/debug</code> directory right next to the <code>app</code> executable.</p>
+<p>Next, we call <code>nm</code> to inspect the symbols and their visibility:</p>
+<pre><code>$ arm-none-eabi-nm --demangle target/thumbv7m-none-eabi/debug/app.o
+
+# or its shorter form
+$ arm-none-eabi-nm -C target/thumbv7m-none-eabi/debug/app.o
+(..)
+         U __aeabi_unwind_cpp_pr0
+00000000 T _reset
+00000000 T rust_begin_unwind
+00000000 N __rustc_debug_gdb_scripts_section__
+</code></pre>
+<p>In the output, you can see the <code>_reset</code> symbol and an uppercase <code>T</code> right next
+to it. This <code>T</code> indicates that <code>_reset</code> is a global symbol that resides in the
+<code>text</code> section (it's part of the program code). (See the <a href="https://sourceware.org/binutils/docs/binutils/nm.html">nm manual</a> for more
+details)</p>
+<p>As homework, try changing the <code>main</code> function a little: remove the <code>export_name</code>
+attribute and/or the <code>pub</code> modifier. How does the <code>nm</code> output changes? Also
+check how the <code>app</code> executable changes using <code>objdump</code>.</p>
+<h3>MEMORY</h3>
+<pre><code>MEMORY
+{
+  FLASH : ORIGIN = 0x00000000, LENGTH = 256K
+  RAM  : ORIGIN = 0x20000000, LENGTH = 64K
+}
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> In linker scripts, <code>K</code> means <code>1024</code> (not <code>1000</code>!) , <code>M</code> means
+<code>1048576</code> (i.e. <code>1024 * 1024</code>) and so on.</p>
+</blockquote>
+<p>The <code>MEMORY</code> block declares two memory regions: one named FLASH and the other
+named RAM. These regions represent the flash memory and RAM regions of the
+LM3S6965. The values here match the memory specification I gave you in the
+<a href="details/ld.html#Region">previous section</a>.</p>
+<h3>SECTIONS</h3>
+<pre><code>SECTIONS
+{
+  /* .. */
+}
+</code></pre>
+<p>The <code>SECTIONS</code> block declares sections and assigns each section to a memory
+region. It's important to assign each and every section to a memory region,
+otherwise you'll get weird &quot;overlap&quot; linker errors.</p>
+<h4>.text</h4>
+<p>The .text section goes into the Flash region which starts at address <code>0x0</code>. And,
+if you remember, the vector table goes in address <code>0x0</code>. So, we must place the
+vector table at the beginning of the .text section.</p>
+<pre><code>  .text :
+  {
+    /* Vector table */
+    LONG(ORIGIN(RAM) + LENGTH(RAM))
+    LONG(_reset + 1);
+</code></pre>
+<p>From the vector table, we only use its first two elements at this time:</p>
+<ul>
+<li>
+<p>The initial value of the stack pointer. As we mentioned before this is usually
+set to the largest valid RAM address and that would be <code>0x2001_0000</code> for the
+LSM303DLHC. Instead of hard coding that value, we can compute it from the
+<code>RAM</code> region we declared before and that's what the <code>LONG(ORIGIN(RAM) + LENGTH(RAM))</code> line does.</p>
+</li>
+<li>
+<p>The reset vector. This is the address of the reset handler, <code>_reset</code>. We add
+1 because the processor is in Thumb mode. (<a href="first/build.html#Entry%20point">remember?</a>)</p>
+</li>
+</ul>
+<p>Right after the vector table we place the reset handler, the actual function
+with its instructions.</p>
+<pre><code>    /* Reset handler */
+    _reset = .;
+    *(.text._reset)
+</code></pre>
+<p>We do that with the <code>*(.text._reset)</code> part. Which basically means place <em>all</em>
+(<code>*()</code>) the symbols, i.e. from all the input object files, named <code>_reset</code> here
+(but there can only be one symbol with that exact name).</p>
+<p>Then we have this <code>_reset = .</code> line before the <code>*(.text._reset)</code> bit. That
+assigns the address of the <code>_reset</code> symbol to the <code>_reset</code> variable. And we used
+that <code>_reset</code> variable in the vector table part (the <code>LONG(_reset + 1)</code> line).</p>
+<p>We also place the other text symbols (functions and constants) from all the
+input object files in this section:</p>
+<pre><code>    *(.text*)
+</code></pre>
+<p>Finally, we indicate to the linker that this <code>.text</code> section goes in the <code>FLASH</code>
+memory region.</p>
+<pre><code>  } &gt; FLASH
+</code></pre>
+<h4>/DISCARD/</h4>
+<pre><code>  /DISCARD/ :
+  {
+    *(.ARM.exidx*)
+    *(.note.gnu.build-id*)
+  }
+</code></pre>
+<p><code>/DISCARD/</code> is not a real section. Everything in this &quot;special section&quot; gets
+discarded by the linker and doesn't make it to the output object. So, why are we
+discarding these specific symbols?</p>
+<ul>
+<li>
+<p><code>.ARM.exidx*</code> These symbols are related to unwinding. Which we aren't using!
+If we leave these symbols in, they'll in turn demand other symbols related to
+unwinding and cause &quot;undefined reference&quot; linker errors.</p>
+</li>
+<li>
+<p><code>note.gnu.build-id*</code>. These symbols are introduced by <code>gcc</code>, which is the
+linker we are using. If not removed, these symbols will try to place
+themselves at address <code>0x0</code> causing &quot;overlap&quot; linker errors.</p>
+</li>
+</ul>
+<h2>Inspect again</h2>
+<p>Let's look again at the <code>objdump</code> output from section <a href="./first/build.html">3.1</a>. We should now be
+able to understand it better:</p>
+<pre><code>$ arm-none-eabi-objdump -Cd target/thumbv7m-none-eabi/debug/app
+
+target/thumbv7m-none-eabi/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+   4:   00000009        .word   0x00000009
+
+00000008 &lt;_reset&gt;:
+   8:   b083            sub     sp, #12
+   a:   e7ff            b.n     c &lt;_reset+0x4&gt;
+   c:   202a            movs    r0, #42 ; 0x2a
+   e:   9001            str     r0, [sp, #4]
+  10:   9002            str     r0, [sp, #8]
+  12:   e7ff            b.n     14 &lt;_reset+0xc&gt;
+  14:   e7fe            b.n     14 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Let's go over it part by part but in reverse!</p>
+<pre><code>00000008 &lt;_reset&gt;:
+   8:   b082        sub sp, #8
+   a:   202a        movs    r0, #42 ; 0x2a
+   c:   9001        str r0, [sp, #4]
+   e:   9000        str r0, [sp, #0]
+  10:   e7ff        b.n 12 &lt;start+0xa&gt;
+  12:   e7fe        b.n 12 &lt;start+0xa&gt;
+</code></pre>
+<p><code>_reset</code> is the reset handler and our program entry point. This is first thing
+the microcontroller will execute when it boots. Note the address <code>0x8</code>, this
+function is in the Flash memory region.</p>
+<p>Then we have:</p>
+<pre><code>00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+   4:   00000009        .word   0x00000009
+</code></pre>
+<p>These two &quot;words&quot; are the vector table which resides at address <code>0x0</code>. Even
+though the vector table is in the <code>.text</code> section, the vector table is not
+composed of instructions but of data.</p>
+<pre><code>00000000 &lt;_reset-0x8&gt;:
+   0:   20010000        .word   0x20010000
+</code></pre>
+<p>The first element of the vector table is an &quot;anonymous&quot; symbol (though the
+linker automatically generates a name for it, based on the names of nearby
+symbols) with value <code>0x2001_0000</code>. <code>0x2001_0000</code> is the highest valid RAM
+address of the LM3S6965. Which we are going to use as the initial value of the
+stack pointer. This address is where the call stack will be created.</p>
+<pre><code>   4:   00000009        .word   0x00000009
+</code></pre>
+<p>The second element of the vector table is the reset &quot;vector&quot;, which is nothing
+more than a pointer to the reset handler, <code>_reset</code>. Even though the reset
+handler lives in address <code>0x8</code>, this symbol has value <code>0x9</code> to indicate that the
+reset handler must be called in thumb mode.</p>
+<h2>Closing comment</h2>
+<p>You don't need to commit all this to memory right now -- I know it's a lot to
+take in. But, yes, linker scripts are important and we'll be dealing with them
+again in the future. At that time, feel free to refer back to this section as a
+reference. For now, the take home message is:</p>
+<ul>
+<li>
+<p>When programming against hardware, your program must follow a device-specific
+memory layout.</p>
+</li>
+<li>
+<p>You can use a linker script to adjust your program memory layout to meet those
+requirements.</p>
+</li>
+</ul>
+<h1>Run it on real hardware</h1>
+<blockquote>
+<p><strong>TODO</strong> Document gotchas. Some dev boards may need to plug/unplug jumpers to
+enable the built-in &gt; programmer/debugger.</p>
+</blockquote>
+<p>It's time to test our program on real hardware! We'll use OpenOCD  to <em>flash</em>
+our program into the microcontroller and then hook <code>gdb</code> and OpenOCD to debug
+our program just like we did before.</p>
+<blockquote>
+<p>Wait, what's flashing?</p>
+</blockquote>
+<p><em>Flashing</em> means we are going to transfer our program from the host machine (PC,
+laptop, etc.) to the target device (the microcontroller). Once flashed, the
+micro will execute the flashed program every time it boots or resets.</p>
+<blockquote>
+<p><strong>ATTENTION!</strong> The flashing instructions here will overwrite the program
+that's currently stored in your microcontroller. Make sure that it's either
+something you are not gonna miss or that's something you can easily get a copy of.</p>
+</blockquote>
+<h2>Compile for a different target device</h2>
+<p>Unless you happen to have a real LM3S6965EVB board right next to you, the binary
+we produced in the previous section won't work for your device. To produce a
+valid binary for your device, you'll have to change the cross compilation target
+from the LM3S6965 to <em>your</em> device and then rebuild the program.</p>
+<p>For the rest of this section, I'll be using the <a href="http://www.st.com/en/evaluation-tools/stm32f3discovery.html">STM32F3DISCOVERY</a> as the target
+device.</p>
+<h3>Update the linker script</h3>
+<p>One of the things that you'll always have to do when changing the cross
+compilation target is to update the device-specific parts of the linker script.</p>
+<p>The STM32F3DISCOVERY contains a <a href="http://www.st.com/resource/en/datasheet/stm32f303vc.pdf">STM32F303VCT6</a> micro with 256 KiB of flash and
+40+8 (*) KiB of RAM. A peculiarity of STM32 devices is that their flash memory starts
+at address <code>0x0800_0000</code>.</p>
+<p>(*) RAM is split in two memory regions located at different addresses.</p>
+<p><em>My</em> linker script adjustments look like this (yours will probably look
+different):</p>
+<pre><code class="language-diff"> MEMORY
+ {
+-  FLASH : ORIGIN = 0x00000000, LENGTH = 256K
+-  RAM : ORIGIN = 0x20000000, LENGTH = 64K
++  CCRAM : ORIGIN = 0x10000000, LENGTH = 8K
++  FLASH : ORIGIN = 0x08000000, LENGTH = 256K
++  RAM : ORIGIN = 0x20000000, LENGTH = 40K
+ }
+</code></pre>
+<h3>Change the target specification</h3>
+<p>Depending on the micro in your dev board, you may also have to change the
+<code>rustc</code> target from <code>thumbv7m-none-eabi</code> to something else. In my case, the
+STM32F303VCT6 contains a Cortex-M4F processor with FPU so I need to switch to the
+<code>thumbv7em-none-eabihf</code> target.</p>
+<p>If you change the target, you'll also need to update the <code>.cargo/config</code> file to
+port the configuration to the new target:</p>
+<pre><code class="language-diff">-[target.thumbv7m-none-eabi]
++[target.thumbv7em-none-eabihf]
+ rustflags = [
+     &quot;-C&quot;, &quot;link-arg=-Tlayout.ld&quot;,
+     &quot;-C&quot;, &quot;link-arg=-nostartfiles&quot;,
+ ]
+</code></pre>
+<h2>Build &amp; inspect</h2>
+<p>Now that the changes have been committed, we can rebuild the program:</p>
+<pre><code>$ xargo build --target $TARGET
+</code></pre>
+<blockquote>
+<p><strong>NOTE</strong> From now on, I'm going to use <code>$TARGET</code>, instead of e.g.
+<code>thumbv7em-none-eabihf</code>, as a placeholder for the cross compilation target to
+make sure you don't use the wrong target triple.</p>
+</blockquote>
+<!-- FIXME use build.rs to force a rebuild when the linker script has been -->
+<!-- modified -->
+<blockquote>
+<p><strong>HEADS UP</strong> Make sure that Cargo actually rebuilds the binary! Cargo doesn't
+trigger a rebuild when the linker script changes. So, if the only thing you
+changed was the linker script and not the <code>rustc</code> target, then you'll have to
+<code>cargo clean</code> first and then call <code>build</code>.</p>
+</blockquote>
+<p>As usual, it's a good idea to inspect the binary with <code>objdump</code> to verify that
+the vector table is where expected.</p>
+<pre><code>$ arm-none-eabi-objdump -Cd ./target/$TARGET/debug/app
+
+./target/$TARGET/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+08000000 &lt;_reset-0x8&gt;:
+ 8000000:       2000a000        .word   0x2000a000
+ 8000004:       08000009        .word   0x08000009
+
+08000008 &lt;_reset&gt;:
+ 8000008:       b083            sub     sp, #12
+ 800000a:       e7ff            b.n     800000c &lt;_reset+0x4&gt;
+ 800000c:       202a            movs    r0, #42 ; 0x2a
+ 800000e:       9001            str     r0, [sp, #4]
+ 8000010:       9002            str     r0, [sp, #8]
+ 8000012:       e7ff            b.n     8000014 &lt;_reset+0xc&gt;
+ 8000014:       e7fe            b.n     8000014 &lt;_reset+0xc&gt;
+</code></pre>
+<p>Looks good! The vector table is at <code>0x0800_0000</code> as expected for my device.</p>
+<h2>Establishing an OpenOCD connection</h2>
+<p>Before we flash the program we have to &quot;open&quot; an OpenOCD connection between the
+device and the host machine. You should be already familiar with these steps
+from the <a href="linux.html#First%20OpenOCD%20connection">development environment</a> chapter:</p>
+<pre><code># Physically connect the dev board to the host machine (probably your laptop), then
+$ [sudo] openocd -f board/$BOARD
+(...)
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v2 JTAG v27 API v2 SWIM v15 VID 0x0483 PID 0x374B
+Info : using stlink api v2
+Info : Target voltage: 2.919073
+Info : stm32f3x.cpu: hardware has 6 breakpoints, 4 watchpoints
+</code></pre>
+<h2>Flash and debug</h2>
+<p>We'll use the <code>gdb</code> shell to both flash and debug the program. So, fire up
+<code>gdb</code>:</p>
+<blockquote>
+<p><strong>NOTE</strong> You can't use <code>lldb</code> this time <code>:-(</code>. AFAICT, there's no <code>lldb</code>
+equivalent to the <code>monitor</code> and <code>load</code> commands provided by <code>gdb</code>. And those
+commands are required in this section.</p>
+</blockquote>
+<pre><code>$ arm-none-eabi-gdb target/$TARGET/debug/app
+</code></pre>
+<p>Next, we need to connect <code>gdb</code> and OpenOCD. The command is the same as the one
+we used with QEMU:</p>
+<pre><code>(gdb) target remote :3333
+Remote debugging using :3333
+0x00000000 in ?? ()
+</code></pre>
+<p>You should also see extra output on the OpenOCD terminal but maybe not the exact
+same output shown here:</p>
+<pre><code class="language-diff"> Info : stm32f1x.cpu: hardware has 6 breakpoints, 4 watchpoints
++Info : accepting 'gdb' connection on tcp/3333
++Info : device id = 0x10036422
++Info : flash size = 256kbytes
+</code></pre>
+<p>Now that we are connected to the device via <code>gdb</code>. Let's flash the program using
+the <code>load</code> command:</p>
+<pre><code>(gdb) load
+Loading section .text, size 0x16 lma 0x8000000
+Start address 0x8000008, load size 20
+Transfer rate: 246 bytes/sec, 10 bytes/write.
+</code></pre>
+<p>You should also see new output on the OpenOCD terminal:</p>
+<pre><code class="language-diff"> Info : accepting 'gdb' connection on tcp/3333
+ Info : device id = 0x10036422
+ Info : flash size = 256kbytes
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++adapter speed: 950 kHz
++target state: halted
++target halted due to debug-request, current mode: Thread
++xPSR: 0x01000000 pc: 0x08000194 msp: 0x2000a000
++Info : Unable to match requested speed 8000 kHz, using 4000 kHz
++Info : Unable to match requested speed 8000 kHz, using 4000 kHz
++adapter speed: 4000 kHz
++target state: halted
++target halted due to breakpoint, current mode: Thread
++xPSR: 0x61000000 pc: 0x2000003a msp: 0x2000a000
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++Info : Unable to match requested speed 1000 kHz, using 950 kHz
++adapter speed: 950 kHz
++target state: halted
++target halted due to debug-request, current mode: Thread
++xPSR: 0x01000000 pc: 0x08000194 msp: 0x2000a000
+</code></pre>
+<p>The program is now flashed and the device is halted at the program's entry
+point, i.e. the <code>main</code> function. Let's repeat the debug session we used for the
+previous QEMU run:</p>
+<pre><code>(gdb) step
+8           let x = 42
+
+(gdb) step
+9           y = x
+
+(gdb) print x
+$1 = 42
+
+(gdb) print &amp;x
+$2 = (i32 *) 0x20001ffc
+
+(gdb) print y
+$3 = -2052926870
+
+(gdb) print/x y
+$4 = 0x85a2d26a
+
+(gdb) print &amp;y
+$5 = (i32 *) 0x20001ff8
+
+(gdb) step
+11          loop {}
+
+(gdb) print y
+$5 = 42
+</code></pre>
+<p>Yay! This time the uninitialized value of <code>y</code> looks more random; I got
+<code>-2052926870</code> on this run.</p>
+<p>While you executed the above commands, you should have seen more output on the
+OpenOCD terminal. Each time you stepped over the program, OpenOCD printed the
+<em>program counter</em> which is the address of the instruction the processor will
+execute next.</p>
+<pre><code class="language-diff"> xPSR: 0x01000000 pc: 0x08000008 msp: 0x20002000
++Info : halted: PC: 0x0800000a
++Info : halted: PC: 0x0800000c
++Info : halted: PC: 0x0800000e
++Info : halted: PC: 0x08000010
+</code></pre>
+<p>Here's one more trick for you to try:</p>
+<pre><code>(gdb) monitor reset halt
+</code></pre>
+<p>This will generate the following OpenOCD output:</p>
+<pre><code> Info : halted: PC: 0x08000010
++target state: halted
++target halted due to debug-request, current mode: Thread
++xPSR: 0x01000000 pc: 0x08000008 msp: 0x20002000
+</code></pre>
+<p>This will reset your microcontroller (!) and halt your program at the reset
+handler, i.e. the <code>main</code> function.</p>
+<p>For fun, let's inspect the <code>y</code> variable <strong>before</strong> it's initialized:</p>
+<pre><code>(gdb) step
+8           let x = 42
+
+(gdb) step
+9           y = x
+
+(gdb) print x
+$6 = 42
+
+(gdb) print &amp;x
+$7 = (i32 *) 0x20001ffc
+
+(gdb) print y
+$8 = 42
+
+(gdb) print &amp;y
+$9 = (i32 *) 0x20001ff8
+</code></pre>
+<p>Surprise! <code>y</code> appears to have been already initialized! Except, that's not the
+case. What actually happened is that resetting the microcontroller doesn't touch
+RAM (i.e. it doesn't power it off). Therefore, the RAM still holds the data from
+the previous run and that's why <code>y</code> hold the value <code>42</code> it was assigned during
+the <em>previous</em> run of the program.</p>
+<p>That's all for this section! You can now close both OpenOCD and <code>gdb</code>. Let's
+move onto more complex programs!</p>
+<h1>Exceptions: Crashing your micro</h1>
+<p>In the previous chapter we wrote a very simple program, built a binary from it,
+verified that said binary was well-formed (i.e. that it had a vector table where
+expected), and even executed it under an emulator and also on real hardware.
+Everything went smoothly! However, when developing things are bound to go awry
+at some point. In the worst case scenario, one might, by mistake, ask the
+microcontroller to perform an operation that it can't handle, like:</p>
+<ul>
+<li>
+<p>Reading/writing to a invalid memory address e.g. beyond the limits of the RAM
+region.</p>
+</li>
+<li>
+<p>Writing to flash memory using simple assignments (<code>*ptr = value</code>). Flash
+memory has an elaborate write mechanism.</p>
+</li>
+<li>
+<p>Executing an instruction that the microcontroller doesn't support. Like trying
+to execute a floating point instruction (e.g. <code>vadd.f32</code>) on a device without
+a FPU.</p>
+</li>
+</ul>
+<p>Under these situations, the processor will raise a <em>hardware exception</em>. When an
+exception is raised, the normal flow of our program is <em>interrupted</em> (stopped)
+and the processor jumps to an exception <em>handler</em> (recall: handler is just
+another name for function).</p>
+<p>There are several types of exceptions but most of them signify a catastrophic
+failure and, in real applications, are usually handled by resetting the system
+(if bare metal) or by resetting/killing the faulty process (if running on top of
+an OS). These catastrophic exceptions should happen rarely though (if ever)
+during the execution of a program; hence the name &quot;exception&quot;.</p>
+<p>As we are just starting out and we are going to be running our programs under
+the debugger, we'll handle all the exceptions the same way: we'll halt the
+processor and yield control back to the debugger using the <code>bkpt</code> instruction.</p>
+<blockquote>
+<p><strong>NOTE</strong> Executing the <code>bkpt</code> instruction when there is no debugger attached
+to the processor will make the processor raise an exception!</p>
+</blockquote>
+<h2>Installing the exception handlers</h2>
+<p>As the official ARM <a href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0553a/BABIFJFG.html">documentation</a> states, the exception vectors (recall: a
+vector is a pointer to a handler, i.e. a function pointer) must be stored in the
+vector table just right after the reset vector. We'll extend our linker script,
+<code>layout.ld</code>, to account for this:</p>
+<pre><code class="language-diff">     /* Vector table */
+     LONG(ORIGIN(RAM) + LENGTH(RAM))
+     LONG(_reset + 1);
++    KEEP(*(.rodata._EXCEPTIONS));
+
+     /* Reset handler */
+     _reset = .;
+</code></pre>
+<p>The change is quite literal: &quot;Place the exceptions (the <code>_EXCEPTIONS</code> symbol)
+right after the address of the reset handler (<code>LONG(_reset + 1)</code>)&quot;.</p>
+<p>Note that this time we use <code>.rodata._EXCEPTIONS</code> rather than
+<code>.text._EXCEPTIONS</code>. The reason is that the <code>_EXCEPTIONS</code> symbol is &quot;data&quot; and
+not a function.</p>
+<p>Now, we need create this <code>_EXCEPTIONS</code> symbol in our program:</p>
+<pre><code class="language-rust">// Add this to `src/main.rs`
+
+#![feature(asm)]
+
+mod exception {
+    pub extern &quot;C&quot; fn handler() {
+        unsafe {
+            asm!(&quot;bkpt&quot;);
+        }
+
+        loop {}
+    }
+
+    #[export_name = &quot;_EXCEPTIONS&quot;]
+    pub static EXCEPTIONS: [Option&lt;extern &quot;C&quot; fn()&gt;; 14] = [Some(handler), // NMI
+                                                            Some(handler), // Hard fault
+                                                            Some(handler), // Memmanage fault
+                                                            Some(handler), // Bus fault
+                                                            Some(handler), // Usage fault
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            Some(handler), // SVCall
+                                                            None, // Reserved for Debug
+                                                            None, // Reserved
+                                                            Some(handler), // PendSV
+                                                            Some(handler)]; // Systick
+}
+</code></pre>
+<p>Let's go over each section added to our program:</p>
+<pre><code class="language-rust">mod exception {
+    pub extern &quot;C&quot; fn handler() {
+        unsafe {
+            asm!(&quot;bkpt&quot;);
+        }
+
+        loop {}
+    }
+
+    ..
+}
+</code></pre>
+<p><code>exception::handler</code> is the handler (function) that we'll use to handle all the
+exceptions. This handler uses the <code>bkpt</code> instruction to trigger a manual
+breakpoint and then loops endlessly. We avoid returning from this function
+because whatever triggered the exception may have corrupted the stack so it may
+not be safe to continue executing the program.</p>
+<pre><code class="language-rust">mod exception {
+    ..
+
+    #[export_name = &quot;_EXCEPTIONS&quot;]
+    pub static EXCEPTIONS: [Option&lt;extern &quot;C&quot; fn()&gt;; 14] = [Some(handler), // NMI
+                                                            Some(handler), // Hard fault
+                                                            Some(handler), // Memmanage fault
+                                                            Some(handler), // Bus fault
+                                                            Some(handler), // Usage fault
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            None, // Reserved
+                                                            Some(handler), // SVCall
+                                                            None, // Reserved for Debug
+                                                            None, // Reserved
+                                                            Some(handler), // PendSV
+                                                            Some(handler)]; // Systick
+}
+</code></pre>
+<p>On the second part, we create the <em>global</em> <code>_EXCEPTIONS</code> symbol backed by a
+static <code>EXCEPTIONS</code> variable. The <a href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0553a/BABIFJFG.html">documentation</a> states that there are 14
+exception &quot;slots&quot; right after the reset handler so we'll place a 14-element
+array of function pointers in the <code>EXCEPTIONS</code> variable. Some of the exception
+slots, the ones marked as &quot;Reserved&quot; in the docs, will never be used at runtime;
+we'll leave those uninitialized (i.e. zeroed). In Rust, function pointers <code>fn()</code>
+are non-nullable. To get nullable function pointers we must wrap the <code>fn()</code>s in
+an <code>Option</code>, then the <code>None</code> variant becomes the equivalent of the null pointer.</p>
+<h2>Build and inspect</h2>
+<p>It's always a good idea to inspect the output binary to check that everything
+looks as expected:</p>
+<pre><code>$ xargo build --target $TARGET
+
+$ arm-none-eabi-objdump -CD target/$TARGET/debug/app
+
+./target/$TARGET/debug/app:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+08000000 &lt;_EXCEPTIONS-0x8&gt;:
+ 8000000:       2000a000        .word   0x2000a000
+ 8000004:       08000041        .word   0x08000041
+
+08000008 &lt;_EXCEPTIONS&gt;:
+ 8000008:       08000053 08000053 08000053 08000053     S...S...S...S...
+ 8000018:       08000053 00000000 00000000 00000000     S...............
+ 8000028:       00000000 08000053 00000000 00000000     ....S...........
+ 8000038:       08000053 08000053                       S...S...
+
+08000040 &lt;_reset&gt;:
+ 8000040:       b084            sub     sp, #16
+ 8000042:       e7ff            b.n     8000044 &lt;_reset+0x4&gt;
+ 8000044:       2000            movs    r0, #0
+ 8000046:       6800            ldr     r0, [r0, #0]
+ 8000048:       9002            str     r0, [sp, #8]
+ 800004a:       6800            ldr     r0, [r0, #0]
+ 800004c:       9001            str     r0, [sp, #4]
+ 800004e:       e7ff            b.n     8000050 &lt;_reset+0x10&gt;
+ 8000050:       e7fe            b.n     8000050 &lt;_reset+0x10&gt;
+
+08000052 &lt;app::exception::handler::he7207b3009cf1097&gt;:
+ 8000052:       b083            sub     sp, #12
+ 8000054:       e7ff            b.n     8000056 &lt;app::exception::handler::he7207b3009cf1097+0x4&gt;
+ 8000056:       be00            bkpt    0x0000
+ 8000058:       e7ff            b.n     800005a &lt;app::exception::handler::he7207b3009cf1097+0x8&gt;
+ 800005a:       e7fe            b.n     800005a &lt;app::exception::handler::he7207b3009cf1097+0x8&gt;
+</code></pre>
+<p>The two most relevant things to note: The <code>exception::handler</code> is located at
+address <code>0x0800_0052</code>. And, <code>_EXCEPTIONS</code>, the part of the vector table where
+the exception handlers reside, is mainly filled with the thumb address of
+<code>exception::handler</code> i.e. <code>0x0800_0053</code>; which is what we wanted. You will also
+see a few <code>0x0</code>s inside <code>_EXCEPTIONS</code>. These are the reserved exceptions slots
+and they are basically zeroed/uninitialized chunks of memory.</p>
+<h2>Let's crash!</h2>
+<blockquote>
+<p><strong>NOTE</strong> This program won't work on QEMU. AFAICT, raising an exception on a
+emulated device is rather hard. For some reason (probably to simplify the
+implementation), actions that normally raise an exception on real hardware are
+allowed in QEMU. <em>shrugs</em></p>
+</blockquote>
+<p>Let's write a program that raises an exception to test the exception handler.
+Our program will attempt to read memory beyond the RAM region. Here is it:</p>
+<pre><code class="language-rust">#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    unsafe {
+        let sram_boundary = *(0x0000_0000 as *const u32);
+        let _crash = *(sram_boundary as *const u32);
+    }
+
+    loop {}
+}
+</code></pre>
+<p>Let' run the program under the debugger on real hardware.</p>
+<pre><code># On another terminal
+$ [sudo] openocd (..)
+</code></pre>
+<pre><code>$ arm-none-eabi-gdb target/cortex-m3/debug/app
+(gdb) target remote :3333
+
+(gdb) load
+
+(gdb) step
+9               let sram_boundary = *(0x0000_0000 as *const u32)
+
+(gdb) step
+10              let _crash = *(ram_boundary as *const u32)
+
+(gdb) print/x ram_boundary
+$1 = 0x2000a000
+
+(gdb) step
+app::exception::handler () at src/main.rs:19
+19                  asm!(&quot;bkpt&quot;)
+</code></pre>
+<p>Remember that the address <code>0x0000_0000</code> is the first element of the vector table
+and contains the highest RAM address. Dereferencing that address
+(<code>sram_boundary</code>) will load memory beyond the RAM region.</p>
+<p>Upon trying to read invalid memory, the processor raises <em>an</em> exception (we
+don't know <em>which</em> one) and then proceeds to execute the <code>exception::handler</code>.
+While executing the handler, the processor encounters the <code>bkpt</code> instruction,
+halts and yields control back to the debugger.</p>
+<p>We'll use this very simple exception handler to uncover programming mistakes
+while debugging. We'll revisit the exception handler in the future to make it
+tell us which exception was raised and which instruction (and line of code)
+generated the exception.</p>
+<h2>Homework</h2>
+<p>What do you think would have happened if we executed the last <code>main</code> function
+that reads memory beyond the RAM boundary <strong>if</strong> we didn't <em>install</em> the
+exception handlers, or IOW if we didn't add the <code>_EXCEPTIONS</code> symbol or the
+<code>EXCEPTIONS</code> variable to our program?</p>
+<blockquote>
+<p><strong>HINT</strong> Look at the disassembly (<code>objdump</code>) of such binary. Take note of the
+addresses. What does the vector table look like?</p>
+</blockquote>
+<blockquote>
+<p><strong>WARNING</strong> Don't actually run a program that raises a hardware exception but
+doesn't handle it!</p>
+</blockquote>
+<h1>Blinking an LED</h1>
+<p>(with too many hexadecimals)</p>
+<blockquote>
+<p><strong>HEADS UP</strong> Most of the links in this page are PDFs!</p>
+</blockquote>
+<p>So far we have only used the processor inside our microcontroller. The processor
+can only do math and logic, and, on its own, it can't interact with the external
+world: it can't drive a LED or a motor, read a sensor or communicate with other
+devices.</p>
+<p>To make our programs more useful (and fun!) we must learn to use <em>peripherals</em>.
+A peripheral is an extra piece of electronics that's built, alongside the
+processor, in the same microcontroller package. Peripherals give the processor
+the extra functionality it needs to interact with the external world.</p>
+<blockquote>
+<p>Awesome! What can I do with these peripherals?</p>
+</blockquote>
+<p>All sort of things! There are several different types of peripherals, each one
+provides a different functionality. Microcontrollers manufacturers call them by
+different names even if they provide the same functionality though. Here are
+some of the most common ones (using STM32 naming convention):</p>
+<ul>
+<li>
+<p><code>GPIO</code>. General Purpose Input/Output. Can be used to turn on/off external
+devices (e.g. a motor, a lamp, etc.) or to read the state of a &quot;switch&quot;
+(e.g. a two-state (ON/OFF) switch, a keyboard, etc.).</p>
+</li>
+<li>
+<p><code>ADC</code>. Analog-to-Digital Converter. Can be used to &quot;read&quot; analog sensors (e.g.
+a thermometer, a light (intensity) sensor, etc.) or signals (e.g. voltage
+level of a battery, electric current, etc.).</p>
+</li>
+<li>
+<p><code>TIM</code>. Timers. Can be used to perform periodic tasks (e.g. every 100 ms),
+measure lengths of time (e.g. for how long was this button pressed?) or
+generate periodic signals with variable <a href="https://en.wikipedia.org/wiki/Duty_cycle">duty cycle</a>
+(AKA <a href="https://en.wikipedia.org/wiki/Pulse-width_modulation">Pulse Width Modulation</a> (PWM)). PWM is mainly used to control how
+much power is supplied to an electric machine like a motor which, in turn,
+lets you indirectly control other parameters like speed and torque.</p>
+</li>
+</ul>
+<p>We'll explore these and several other peripherals in more detail in a <a href="peripherals.html">later
+chapter</a>.</p>
+<blockquote>
+<p>So, how do I use these peripherals?</p>
+</blockquote>
+<p>Thanks to some magic called <a href="https://en.wikipedia.org/wiki/Memory-mapped_I/O">memory mapped I/O</a>, to the processor,
+peripherals appear as memory regions (!). This means that, for example, by
+writing to some special memory address you can use the digital I/O peripheral to
+turn on/off a LED. Another example: By reading from some special memory address
+you can use the Analog to Digital Converter peripheral to &quot;read&quot; an analog
+sensor like a thermometer and get the current environment temperature as a
+digital/discrete value.</p>
+<p>A chunk of memory associated to a single peripheral is known as a &quot;register
+block&quot;.  As other types of memory, these regions are usually accessed in word
+sized chunks (32-bit on ARM). Each of these word sized chunks is referred to as
+a (hardware) register; though registers can also be half-word or byte sized.
+Each of these registers has a human-friendly name and an address associated to
+it.</p>
+<p>A concrete example: The STM32F303VCT6 microcontroller has a peripheral known as
+Reset and Clock Control (RCC). The register block associated with this
+peripheral starts at address <code>0x4002_10000</code>. This register block is comprised of
+several registers as seen on its <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=166&amp;zoom=auto,67,754">register map</a>. One of registers associated
+with this peripheral is the <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=148&amp;zoom=auto,67,447">&quot;AHB peripheral clock enable register&quot;</a>
+(AKA <code>APB2ENR</code>) which lives at address <code>0x4002_1014</code>. This particular register
+can be used to power on/off other peripherals.</p>
+<p>To get familiar with the use of peripherals, we'll write the microcontroller
+version of the &quot;hello world&quot; program: Blinking an LED.</p>
+<h2>The device-agnostic plan</h2>
+<p>This is an overview of what our program will do:</p>
+<ol>
+<li>Power on the digital output peripheral.</li>
+</ol>
+<p>To save energy, most of the peripherals in a microcontroller boot in a powered
+off state. We have to explicitly &quot;power on&quot; the peripherals we want to use.</p>
+<ol start="2">
+<li>Put the <em>pin</em> that's connected to the LED in <em>output mode</em>.</li>
+</ol>
+<p>A pin a metal contact that a microcontroller exposes and that can be
+electrically connected to another device. A pin can either be (configured) to be
+in input mode or in output mode, but it must be in output mode to be able to
+drive (i.e. supply current to) an external device. Most pins start in input mode
+right after the micro boots to avoid spuriously driving external devices.</p>
+<ol start="3">
+<li>Set the pin <em>high</em> or <em>low</em> to turn on the LED.</li>
+</ol>
+<p><em>Low</em> means outputting zero volts (0V) on the pin whereas <em>high</em> means
+outputting a non-zero voltage, usually the power supply voltage (3.3V on most
+Cortex-M micros), on the pin. Depending on how the LED is wired to the pin,
+setting the pin low/high should turn it off/on or the other way around.</p>
+<p>After we've confirmed that we can turn the LED on/off, we'll modify the program
+to toggle the state of the LED pin every few seconds.</p>
+<h2>The device-specific details</h2>
+<p>Now we must fill in the device-specific details to realize our plan. All the
+needed information will come from the microcontroller reference manual
+(<a href="http://www.st.com/resource/en/reference_manual/DM00043574.pdf">here's mine</a>) and the dev board user manual (<a href="http://www.st.com/resource/en/user_manual/dm00063382.pdf">here's mine</a>).</p>
+<h3>Which LED, which pin?</h3>
+<p>First, we must pick a LED on the dev board to work with. Your dev board very
+likely has at least one &quot;user LED&quot; that's connected to one of the
+microcontroller's pin (check its user manual). Don't confuse an &quot;user LED&quot; with
+the &quot;power LED&quot;. The latter is an indicator of whether the board is powered on
+or off and can't be controlled by the microcontroller.</p>
+<blockquote>
+<p><strong>TODO</strong> What do I do if my dev board doesn't have an &quot;user LED&quot;?</p>
+</blockquote>
+<p>The STM32F3DISCOVERY has <a href="http://www.st.com/content/ccc/resource/technical/document/user_manual/8a/56/97/63/8d/56/41/73/DM00063382.pdf/files/DM00063382.pdf/jcr:content/translations/en.DM00063382.pdf#page=18&amp;zoom=auto,67,521">eight user LEDs</a>. For this example, I'll be
+using the red one that's connected to the pin <em>PE9</em>. Because micros have many
+I/O pins, these pins are usually grouped in <em>ports</em>. A port is a collection of
+8, 16, or some other number of pins. Ports are usually identified with letters:
+A, B, etc. and the pins in it are usually identified with numbers: 0, 1, etc.
+Therefore, you can think of the the pin PE9 as the 10th (because numbering
+starts at 0) pin in the port E.</p>
+<h3>How to power on a peripheral?</h3>
+<p>Micros have a dedicated peripheral that's in charge of &quot;clocking&quot; other
+peripherals. Clocking in this context means powering on/off a peripheral. A
+peripheral that doesn't receive a clock signal is basically powered off -- it
+can't be used and it doesn't (actively) consume energy.</p>
+<p>On STM32 micros this peripheral is called <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/a2/2d/02/4b/78/57/41/a3/CD00246267.pdf/files/CD00246267.pdf/jcr:content/translations/en.CD00246267.pdf#page=69&amp;zoom=auto,67,755">RCC</a>. The family of <code>*ENR</code> registers
+in this peripheral control the clocking of other peripherals. In my case, I'm
+interested in the <a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=148&amp;zoom=auto,67,447">AHBENR</a> register which contains a <code>IOPEEN</code> bit that controls
+the clocking of the E port.</p>
+<h3>How to put the pin in output mode?</h3>
+<p>In my case, I need to put the pin <code>PE9</code> in output mode. Some register in the
+<a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=228&amp;zoom=auto,67,755">GPIOE</a> peripheral should let me do that. After looking through the
+documentation, I found that the <code>MODER</code> register does that. In particular, the
+<a href="http://www.st.com/content/ccc/resource/technical/document/reference_manual/4a/19/6e/18/9d/92/43/32/DM00043574.pdf/files/DM00043574.pdf/jcr:content/translations/en.DM00043574.pdf#page=237&amp;zoom=auto,67,669">MODER</a> register contains the bitfield <code>MODER9</code> which control the &quot;mode&quot; (input
+or output) of the pin <code>PE9</code>. I'll use the following setting:</p>
+<ul>
+<li><code>MODER9 = 0b01</code> Puts the pin in general purpose push-pull output mode.</li>
+</ul>
+<h3>Driving the pin high and low</h3>
+<p>Again the register that I want must be in the <code>GPIOE</code> peripheral. In this case,
+it's the <code>BSRR</code> register. It can individually <em>set</em> or <em>reset</em> a pin. Here,
+<em>reset</em> means putting the pin low and <em>set</em> means driving the pin high.</p>
+<h2>Putting it all together</h2>
+<p>Here's a detailed specification of the program:</p>
+<ol>
+<li>
+<p>Turn on the GPIOC peripheral: Set the <code>IOPEEN</code> bit in the <code>RCC-&gt;AHBENR</code>
+register to <code>1</code>.</p>
+</li>
+<li>
+<p>Put the PE9 pin in output mode: Set the <code>MODER9</code> bitfield in the
+<code>GPIOE-&gt;MODER</code> register to <code>0b01</code>.</p>
+</li>
+<li>
+<p>Set the PE9 pin high: Set the <code>BS9</code> bit in the <code>GPIOE-&gt;BSRR</code> register to <code>1</code>.</p>
+</li>
+<li>
+<p>Set the PE9 pin low: Set the <code>BR9</code> bit in the <code>GPIOE-&gt;BSRR</code> register to <code>1</code>.</p>
+</li>
+</ol>
+<h2>The code</h2>
+<p>And here's the code. I'm omitting the <code>exception</code> and <code>lang_items</code> modules which
+haven't changed since <a href="./exceptions.html#Installing%20the%20exception%20handlers">our previous program</a>.</p>
+<pre><code class="language-rust">#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    power_on_gpioe();
+    put_pe9_in_output_mode();
+    set_pe9_high();
+    set_pe9_low();
+
+    loop {}
+}
+
+fn power_on_gpioe() {
+    /// Start address of the RCC register block
+    const RCC: u32 = 0x4002_1000;
+
+    /// Offset address of the AHBENR register
+    const RCC_AHBENR: u32 = 0x14;
+
+    /// IOPCEN bit mask
+    const RCC_AHBENR_IOPEEN: u32 = 1 &lt;&lt; 21;
+
+    unsafe {
+        // Pointer to the AHBENR register
+        let ahbenr = (RCC + RCC_AHBENR) as *mut u32;
+
+        // IOPECN = 1
+        *ahbenr |= RCC_AHBENR_IOPEEN;
+    }
+}
+
+/// Start address of the GPIOC register block
+const GPIOE: u32 = 0x4800_1000;
+
+/// Offset address of the BSRR register
+const GPIOE_BSRR: u32 = 0x18;
+
+fn put_pe9_in_output_mode() {
+    /// Offset address of the CRH register
+    const GPIOE_MODER: u32 = 0x0;
+
+    unsafe {
+        // Pointer to the MODER register
+        let moder = (GPIOE + GPIOE_MODER) as *mut u32;
+
+        // MODER9 = 0b01
+        *moder = (*moder &amp; !(0b11 &lt;&lt; 18)) | (0b01 &lt;&lt; 18)
+    }
+}
+
+fn set_pe9_high() {
+    unsafe {
+        // Pointer to the BSRR register
+        let bsrr = (GPIOE + GPIOE_BSRR) as *mut u32;
+
+        // BS9 = 1
+        *bsrr = 1 &lt;&lt; 9;
+    }
+}
+
+fn set_pe9_low() {
+    unsafe {
+        // Pointer to the BSRR register
+        let bsrr = (GPIOE + GPIOE_BSRR) as *mut u32;
+
+        // BR9 = 1
+        *bsrr = 1 &lt;&lt; (16 + 9);
+    }
+}
+</code></pre>
+<p>Quite unsightly, right? So many magic values. In a <a href="peripherals.html">later chapter</a>, we'll
+refactor this code to get rid of the magic values, the pointer arithmetic and
+the raw pointers. But this code will make do for now!</p>
+<h2>Test it</h2>
+<p>Time to test our code! Don't feel discouraged if your program crashes or doesn't
+work on the first try! I certainly get most of my embedded programs wrong when
+I'm just starting to write drivers and have to deal with all these magic values
+and/or have to jump back and forth between the microcontroller reference manual
+and my library/program.</p>
+<p>OK, here's how I'd debug this program:</p>
+<ol>
+<li>
+<p>Starting from the program entry point, <code>_step</code>, repeatedly <code>step</code> over the
+program until you hit the the &quot;set the pin high&quot; statement, in my case this
+is the <code>*bsrr = 1 &lt;&lt; 8</code>. If you didn't hit an exception, congratulations!
+Head to step 3, otherwise go to step 2.</p>
+</li>
+<li>
+<p>If you hit an exception, you should now know which statement triggered it.
+Reset your microcontroller with <code>monitor reset halt</code>, then step all the way
+until your reach the faulty statement but don't execute it!. At this point,
+inspect the address of the register that will be modified by the faulty
+statement. Is the address right/valid? If not, fix it then go to step 1.</p>
+</li>
+<li>
+<p>You should now be about to execute the instruction that sets the LED pin
+high. Step from here all the way to the endless <code>loop</code>. This should toggle
+the state of the LED at least once. If it doesn't, then quite a few things
+could have gone wrong ... See below:</p>
+</li>
+</ol>
+<ul>
+<li>
+<p>Wrong register address as seen in step 2.</p>
+</li>
+<li>
+<p><code>GPIO</code> has not been powered on or configured properly. You'll have to
+&quot;examine&quot; (<code>(gdb) x $ADDRESS</code>) all the related registers. If you didn't power
+on the <code>GPIO</code> peripheral, you'll see that trying to write to that peripheral
+registers has no effect.</p>
+</li>
+<li>
+<p>You are driving the wrong pin, i.e. one that's not connected to an LED.
+Confirm this against your dev board user manual.</p>
+</li>
+</ul>
+<h2>Adding a loop</h2>
+<p>Now that we know that we can toggle the state of the LED. Making the LED blink
+is relatively easy. We need to add a <code>delay</code> function and then move the LED
+toggling code inside a loop:</p>
+<pre><code class="language-rust">#[export_name = &quot;_reset&quot;]
+pub extern &quot;C&quot; fn main() -&gt; ! {
+    power_on_gpioe();
+    put_pe9_in_output_mode();
+
+    let ticks = 100_000;
+    loop {
+        set_pe9_high();
+        delay(ticks);
+        set_pe9_low();
+        delay(ticks);
+    }
+}
+
+fn delay(n: u32) {
+    for _ in 0..n {}
+}
+</code></pre>
+<p>I have no way of telling you what value of <code>n</code> will give you e.g. a delay of 1
+second because that depends on the built-in internal clock of your
+microcontroller (mine is 8 MHz) and the actual instructions that <code>delay</code>
+compiles to in debug mode. However, using a value between <code>10_000</code> and <code>100_000</code>
+for <code>ticks</code> should make the LED blink at a visible rate.</p>
+<h2>Test it again</h2>
+<p>To test, simply flash the program and let it run from the debugger:</p>
+<pre><code>(gdb) continue
+</code></pre>
+<p>You should now see the LED blink at some rate. To make the LED blink faster make
+the value of <code>ticks</code> smaller. To do this, first manually break the program by
+pressing <code>Crtl-C</code> at <code>gdb</code>'s prompt, then use the following commands:</p>
+<pre><code># break somewhere inside the loop
+(gdb) break main.rs:13
+
+(gdb) continue
+Breakpoint 1, app::main () at (..)/src/main.rs:13
+13              set_pe9_high()
+
+# make ticks smaller
+(gdb) set ticks = 10000
+
+# clear breakpoint
+(gdb) clear main.rs:13
+
+(gdb) continue
+</code></pre>
+<p>The LED should now blink at a faster rate. You can repeat the experiment but
+setting <code>ticks</code> to a larger value.</p>
+<h1>(Mis)Optimization</h1>
+<p>Surprise: Enabling optimizations (<code>--release</code>) optimizes away our whole program!</p>
+<p>Solution:</p>
+<ul>
+<li>Split program into a library to avoid the aggressive pre-linking removal of symbols.</li>
+<li>Use volatile loads/stores to prevent the compiler from optimizing away/coalescing memory accesses.</li>
+<li>Add linker script assertions to avoid future misoptimizations.</li>
+</ul>
+<h1>Zero-cost type-safe register manipulation</h1>
+<p>Goals:</p>
+<ul>
+<li>Go from hexadecimal gibberish to structs.</li>
+<li>Prevent writing to read-only registers and viceversa.</li>
+<li>Prevent reading to,writing to or modifying reserved bits.</li>
+<li>Nicer debugging experience: <code>print GPIOA</code> -&gt; you get all the registers in that register block and
+their values.</li>
+</ul>
+<h1>Abstracting Hardware</h1>
+<p>Goals:</p>
+<ul>
+<li>A device-agnostic API.</li>
+</ul>
+<h1>Peripherals</h1>
+<p>Overview of other common peripherals:</p>
+<ul>
+<li>USART/UART/Serial</li>
+<li>SPI</li>
+<li>I2C</li>
+<li>GPIO</li>
+<li>Timers + PWM</li>
+<li>ADC</li>
+<li>DAC</li>
+</ul>
+<h1>Unwritten topics</h1>
+<ul>
+<li>More debugging patterns: breakpoints, watchpoints, <code>bkpt</code>, etc.</li>
+<li>The <code>.data</code> and <code>.bss</code> sections: <code>static</code> variables, linker script (again) and initialization
+routine.</li>
+<li>Guaranteed <code>panic!</code>-free programs with this one weird trick!</li>
+<li>The Rust allocator interface.</li>
+<li>Debug prints with ITM (Instrumentation Trace Macrocell)</li>
+<li>&quot;Apps&quot;
+<ul>
+<li>Heartbeat LED</li>
+<li>Read an analog sensor. e.g. just potentiometer, a photoresistor or a CNY70.</li>
+<li>Read a digital sensor via SPI or I2C. e.g. motion sensor.</li>
+<li>Data acquisition. e.g. sensor + serial comm</li>
+<li>Move a servomotor</li>
+<li>Open loop control system. e.g. serial comm + servo or potentiometer + servo</li>
+<li>Closed loop control system. e.g. servo + magnetometer</li>
+</ul>
+</li>
+<li>Interfacing external devices
+<ul>
+<li>Buttons and debouncing.</li>
+<li>Servomotors.</li>
+</ul>
+</li>
+<li>Async and concurrency
+<ul>
+<li>Scheduling strategies: Super loop, cooperative, preemptive.</li>
+<li>Interrupts: <code>asm!(&quot;cpsid i&quot;)</code>, <code>asm!(&quot;cpsie i&quot;)</code>, data races and atomic operations.</li>
+<li>DMA</li>
+</ul>
+</li>
+<li>FPU</li>
+<li><code>nm -C --size-sort</code>: binary size profiling</li>
+<li><code>nm -C</code>: global vs local text symbol</li>
+<li>librarify: src/lib.rs + src/bin/*.rs. Uses <code>extern</code> (lib) and <code>no_mangle</code> (bin) symbol. Basically
+the library says: you (the binary) must give me a symbol with this <em>unmangled</em> name. Downside:
+types signatures are lost. How to recover them? traits? Related: weak symbols for e.g. exceptions.</li>
+<li>ARM calling convention:
+<ul>
+<li>cf. http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042f/IHI0042F_aapcs.pdf</li>
+<li>A diagram of how the stack, the heap and static variables (.data, .bss) are allocated in RAM.</li>
+<li>An explanation of how the call stack works: stack pointer, stack frames, what happens when a
+function/interrupt is called, etc.</li>
+<li>How arguments are passed to functions: via stack, registers</li>
+</ul>
+</li>
+<li>mention that a section can't exceed its region capacity. This is automatically enforced by the
+linker based on what the linker script says.</li>
+<li>bluetooth: HC-06. <code>rfcomm bind rfcomm0 $ADDRESS</code></li>
+<li>document other flashing methods: ELF -&gt; <code>objcopy</code> -&gt; binary, then directly flash the binary using
+OpenOCD (without <code>gdb</code>) or st-link.</li>
+<li>revisit the default exception handler: where did we come from? (inspect stack) which exception is
+this? (inspect NVIC(?) register).
+<ul>
+<li>cf. http://www.freertos.org/Debugging-Hard-Faults-On-Cortex-M-Microcontrollers.html</li>
+</ul>
+</li>
+<li>embedding Rust in C frameworks like FreeRTOS or the Photon.
+<ul>
+<li>cf. https://github.com/japaric/photon</li>
+</ul>
+</li>
+</ul>
+<h1>Resources</h1>
+<h2>Cortex-M</h2>
+<p>The ultimate source of information about this processor family is the <a href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.set.cortexm/index.html">ARM info center</a>.</p>
+<p>Some documents of interest:</p>
+<ul>
+<li><a href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.set.cortexm/index.html">Cortex-M0 Devices - Generic User Guide</a>. About the Cortex-M0 processor, its instruction set
+and its peripherals.</li>
+<li><a href="http://infocenter.arm.com/help/topic/com.arm.doc.dui0662b/DUI0662B_cortex_m0p_r0p1_dgug.pdf">Cortex-M0+ Devices - Generic User Guide</a>. Same as above but for the Cortex-M0+.</li>
+<li><a href="http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/DUI0552A_cortex_m3_dgug.pdf">Cortex-M3 Devices - Generic User Guide</a>. Same as above but for the Cortex-M3.</li>
+<li><a href="http://infocenter.arm.com/help/topic/com.arm.doc.dui0553a/DUI0553A_cortex_m4_dgug.pdf">Cortex-M4 Devices - Generic User Guide</a>. Same as above but for the Cortex-M4.</li>
+<li><a href="http://infocenter.arm.com/help/topic/com.arm.doc.dui0646a/DUI0646A_cortex_m7_dgug.pdf">Cortex-M7 Devices - Generic User Guide</a>. Same as above but for the Cortex-M7.</li>
+<li><a href="http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042f/IHI0042F_aapcs.pdf">Procedure Call Standard for the ARM Architecture</a>. About the machine registers, how
+subroutines are called, how their parameters are passed and how their results are returned.</li>
+<li><a href="http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf">Lazy Stacking and Context Switching</a>. How the processor automatically decides when (not) to
+save floating-point registers on the stack during interrupts. Important if implementing an OS, as
+one should re-implement this functionality in their context switching logic to keep context
+switching times small.</li>
+</ul>
+<h2>LM3S6965EVB</h2>
+<p>This is the evaluation board we'll emulate using QEMU. It contains an LM3S6965 microcontroller. The
+most important bits of documentation related to this board are:</p>
+<ul>
+<li>The <a href="http://infocenter.arm.com/help/topic/com.arm.doc.dai0298a/DAI0298A_cortex_m4f_lazy_stacking_and_context_switching.pdf">Microcontroller data sheet</a>. It contains the register maps and the descriptions of all the
+device peripherals.</li>
+<li>The <a href="http://www.ti.com/lit/ug/spmu029a/spmu029a.pdf">Evaluation Board User manual</a>. Description of the physical board.</li>
+</ul>
+<h2>Similar/related projects</h2>
+<h3><code>zinc</code></h3>
+<blockquote>
+<p>The bare metal stack for rust</p>
+</blockquote>
+<p><a href="https://github.com/hackndev/zinc">GitHub</a></p>
+<p>The Zinc project was the pioneer in the embedded Rust space. I have borrowed a lot of ideas from
+there (like building executables using only Cargo) to write this book.</p>
+<h3>Hanno Braun's blog</h3>
+<blockquote>
+<p>&quot;I'm teaching myself embedded programming, and I've decided to write about every step of the way&quot;</p>
+</blockquote>
+<p><a href="http://embedded.hannobraun.de/">Website</a></p>
+<p><a href="https://github.com/hannobraun/embedded">GitHub repository</a></p>
+<p>Hanno is also exploring this space but using an Arduino Due. Definitely worth checking out!</p>
+<h3>RustyGecko</h3>
+<blockquote>
+<p>Developing Rust on Bare-Metal - An experimental embedded software platform</p>
+</blockquote>
+<p><a href="https://brage.bibsys.no/xmlui/handle/11250/2352353">Abstract and full text PDF</a></p>
+<p><a href="https://github.com/RustyGecko">GitHub repositories</a></p>
+<p>A master thesis about using Rust to develop software for the Cortex-M3 based EFM32GG
+microcontroller. I found the section about &quot;Handling interrupts with Closures&quot; and the discussion
+about &quot;Avoiding Mutable Aliases to Hardware&quot; particularly interesting! The authors have also put
+their code up on GitHub.</p>
+<h1>FAQ</h1>
+<h2>Can I use my Arduino to follow this material?</h2>
+<p>If you have an Arduino Due then the answer is yes.</p>
+<p>The other Arduinos have AVR processors and <code>rustc</code> can't compile programs for that architecture yet.
+See <a href="./why-arm.html">Why ARM Cortex-M micros?</a> for more details.</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+
+                
+
+            </div>
+
+            
+
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>

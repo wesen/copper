@@ -1,0 +1,180 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./intro.html"><strong>1.</strong> Introduction</a></li><li><ul class="section"><li><a href="./audience.html"><strong>1.1.</strong> Audience</a></li><li><a href="./why-rust.html"><strong>1.2.</strong> Why Rust?</a></li><li><a href="./why-arm.html"><strong>1.3.</strong> Why ARM Cortex-M micros?</a></li><li><a href="./what-dev-board.html"><strong>1.4.</strong> What dev board should I use/get?</a></li></ul></li><li><a href="./tools.html"><strong>2.</strong> Setting up a development environment</a></li><li><ul class="section"><li><a href="./linux.html"><strong>2.1.</strong> Linux</a></li><li><a href="./macos.html"><strong>2.2.</strong> macOS</a></li><li><a href="./windows.html"><strong>2.3.</strong> Windows</a></li></ul></li><li><a href="./first/prog.html"><strong>3.</strong> First program</a></li><li><ul class="section"><li><a href="./first/build.html"><strong>3.1.</strong> Build &amp; inspect</a></li><li><a href="./first/qemu.html"><strong>3.2.</strong> Run it under QEMU</a></li><li><a href="./details.html"><strong>3.3.</strong> Nitty-gritty details</a></li><li><ul class="section"><li><a href="./details/target.html"><strong>3.3.1.</strong> Target specification</a></li><li><a href="./details/boot.html"><strong>3.3.2.</strong> Boot process</a></li><li><a href="./details/ld.html"><strong>3.3.3.</strong> Linker script</a></li></ul></li><li><a href="./first/flash.html"><strong>3.4.</strong> Run it on real hardware</a></li></ul></li><li><a href="./exceptions.html"><strong>4.</strong> Exceptions: Crashing your micro</a></li><li><a href="./blink.html"><strong>5.</strong> Blinking an LED</a></li><li class="spacer"></li><li class="affix">Work In Progress chapters</li><li class="affix"><a href="./optimize.html">(Mis)Optimization</a></li><li class="affix"><a href="registers.html">Zero-cost type-safe register manipulation</a></li><li class="affix"><a href="hal.html">Abstracting Hardware</a></li><li class="affix"><a href="./peripherals.html">Peripherals</a></li><li class="spacer"></li><li class="affix"><a href="./unwritten.html" class="active">Unwritten topics</a></li><li class="spacer"></li><li class="affix"><a href="./resources.html">Resources</a></li><li class="affix"><a href="./faq.html">FAQ</a></li><li class="spacer"></li><li class="affix">Published using mdBook</li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h1>Unwritten topics</h1>
+<ul>
+<li>More debugging patterns: breakpoints, watchpoints, <code>bkpt</code>, etc.</li>
+<li>The <code>.data</code> and <code>.bss</code> sections: <code>static</code> variables, linker script (again) and initialization
+routine.</li>
+<li>Guaranteed <code>panic!</code>-free programs with this one weird trick!</li>
+<li>The Rust allocator interface.</li>
+<li>Debug prints with ITM (Instrumentation Trace Macrocell)</li>
+<li>&quot;Apps&quot;
+<ul>
+<li>Heartbeat LED</li>
+<li>Read an analog sensor. e.g. just potentiometer, a photoresistor or a CNY70.</li>
+<li>Read a digital sensor via SPI or I2C. e.g. motion sensor.</li>
+<li>Data acquisition. e.g. sensor + serial comm</li>
+<li>Move a servomotor</li>
+<li>Open loop control system. e.g. serial comm + servo or potentiometer + servo</li>
+<li>Closed loop control system. e.g. servo + magnetometer</li>
+</ul>
+</li>
+<li>Interfacing external devices
+<ul>
+<li>Buttons and debouncing.</li>
+<li>Servomotors.</li>
+</ul>
+</li>
+<li>Async and concurrency
+<ul>
+<li>Scheduling strategies: Super loop, cooperative, preemptive.</li>
+<li>Interrupts: <code>asm!(&quot;cpsid i&quot;)</code>, <code>asm!(&quot;cpsie i&quot;)</code>, data races and atomic operations.</li>
+<li>DMA</li>
+</ul>
+</li>
+<li>FPU</li>
+<li><code>nm -C --size-sort</code>: binary size profiling</li>
+<li><code>nm -C</code>: global vs local text symbol</li>
+<li>librarify: src/lib.rs + src/bin/*.rs. Uses <code>extern</code> (lib) and <code>no_mangle</code> (bin) symbol. Basically
+the library says: you (the binary) must give me a symbol with this <em>unmangled</em> name. Downside:
+types signatures are lost. How to recover them? traits? Related: weak symbols for e.g. exceptions.</li>
+<li>ARM calling convention:
+<ul>
+<li>cf. http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042f/IHI0042F_aapcs.pdf</li>
+<li>A diagram of how the stack, the heap and static variables (.data, .bss) are allocated in RAM.</li>
+<li>An explanation of how the call stack works: stack pointer, stack frames, what happens when a
+function/interrupt is called, etc.</li>
+<li>How arguments are passed to functions: via stack, registers</li>
+</ul>
+</li>
+<li>mention that a section can't exceed its region capacity. This is automatically enforced by the
+linker based on what the linker script says.</li>
+<li>bluetooth: HC-06. <code>rfcomm bind rfcomm0 $ADDRESS</code></li>
+<li>document other flashing methods: ELF -&gt; <code>objcopy</code> -&gt; binary, then directly flash the binary using
+OpenOCD (without <code>gdb</code>) or st-link.</li>
+<li>revisit the default exception handler: where did we come from? (inspect stack) which exception is
+this? (inspect NVIC(?) register).
+<ul>
+<li>cf. http://www.freertos.org/Debugging-Hard-Faults-On-Cortex-M-Microcontrollers.html</li>
+</ul>
+</li>
+<li>embedding Rust in C frameworks like FreeRTOS or the Photon.
+<ul>
+<li>cf. https://github.com/japaric/photon</li>
+</ul>
+</li>
+</ul>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./peripherals.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="./resources.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./peripherals.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="./resources.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>
