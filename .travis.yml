@@ -16,7 +16,7 @@ matrix:
       os: osx
 
 install:
-  - if [ $TRAVIS_PULL_REQUEST != false ]; then
+  - if [ $TRAVIS_BRANCH != master ]; then
       curl https://sh.rustup.rs -sSf |
         sh -s -- -y --default-toolchain $TRAVIS_RUST_VERSION;
 
@@ -35,7 +35,7 @@ install:
 
 script:
   # chmod: Travis can't cache files that are not readable by "others"
-  - if [ $TRAVIS_PULL_REQUEST != false ]; then
+  - if [ $TRAVIS_BRANCH != master ]; then
       if [ $TRAVIS_OS_NAME = linux ]; then
         sh ci/run-docker.sh $TARGET || exit 1;
       else
@@ -46,7 +46,7 @@ script:
     fi
 
 after_success:
-  - if [ $TARGET = x86_64-unknown-linux-gnu ] && [ $TRAVIS_BRANCH = master ] && [ $TRAVIS_PULL_REQUEST = false ]; then
+  - if [ $TARGET = x86_64-unknown-linux-gnu ] && [ $TRAVIS_BRANCH = master ]; then
       curl -LSfs https://japaric.github.io/trust/install.sh |
         sh -s -- --git azerupi/mdbook --tag v0.0.14 --to .;
 
